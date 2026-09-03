@@ -1133,6 +1133,10 @@ i.fa-solid {
     box-sizing: border-box;
 }
 
+.mob {
+    color: var(--background);
+}
+
 .discount-badge {
     display: inline-flex;
     align-items: center;
