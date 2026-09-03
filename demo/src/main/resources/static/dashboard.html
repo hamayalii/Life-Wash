@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js via CDN (vanilla-friendly charting) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/pos.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="icon" href="data:," />
+</head>
+
+<body class="min-h-screen w-full bg-slate-100 font-sans text-slate-800">
+  <!-- Full-width container: no sidebar, no header utility icons -->
+  <main class="w-full px-4 py-6 sm:px-8 sm:py-8">
+    <div class="mx-auto flex w-full max-w-[1600px] flex-col gap-6">
+      <header class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-slate-700">Dashboard</h1>
+        <div class="nav-actions flex items-center gap-4">
+          <!-- Notification Bell Icon -->
+          <div class="notification-container" style="position: relative; display: inline-block;">
+            <button id="notificationBtn" class="notification-btn relative p-2 rounded-lg hover:bg-slate-200 transition-colors">
+              <i class="fa-solid fa-bell text-slate-600 text-xl"></i>
+              <span id="notificationBadge" class="notification-badge hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"></span>
+            </button>
+            <!-- Notification Dropdown -->
+            <div id="notificationDropdown" class="notification-dropdown hidden">
+              <div class="p-4 border-b border-slate-200">
+                <h3 class="font-semibold text-slate-700">ڕاپۆرتەکان</h3>
+              </div>
+              <div id="notificationList" class="p-2">
+                <!-- Notifications will be injected here -->
+              </div>
+              <div id="noNotifications" class="p-4 text-center text-slate-500 hidden">
+                هیچ ڕاپۆرتێک نییە
+              </div>
+            </div>
+          </div>
+          <div id="adminMenu" class="admin-menu hidden">
+            <button id="adminToggle" class="btn btn-secondary admin-toggle"><i class="fa-solid fa-bars"></i>
+              ئەدمین</button>
+            <div class="admin-dropdown hidden">
+              <a href="/index.html">سەرەکی</a>
+              <a href="/pos.html">خاڵی داواکردن (POS)</a>
+              <a href="/report.html">ئامار</a>
+              <a href="/settings.html">ڕێکخستنی نرخەکان</a>
+              <button id="logoutBtn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i>
+                چوونەدەرەوە</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Row 1: 4 Metric Cards (full width) -->
+      <section aria-label="Key metrics" class="keyM">
+        <div id="stats-container" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <!-- Cards injected by dashboard.js -->
+        </div>
+      </section>
+
+      <!-- Row 2: Revenue chart (wide) + Donut chart -->
+      <section aria-label="Charts" class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <article class="flex flex-col rounded-xl bg-white p-6 shadow-sm">
+          <h2 class="mb-4 text-lg font-semibold text-slate-700">قازانجی مانگانە</h2>
+          <div class="relative h-72 w-full">
+            <canvas id="profitChart" aria-label="Monthly profit chart" role="img"></canvas>
+          </div>
+          <div id="profit-summary" class="mt-4 text-sm text-slate-600">
+            <!-- Monthly profit summary injected by dashboard.js -->
+          </div>
+        </article>
+
+        <article class="flex flex-col rounded-xl bg-white p-6 shadow-sm">
+          <h2 class="mb-4 text-lg font-semibold text-slate-700">خواست زیاتر لەسەر شووشتنی چییە؟</h2>
+          <div class="relative mx-auto h-56 w-56">
+            <canvas id="salesChart" aria-label="Total sales chart" role="img"></canvas>
+          </div>
+          <ul id="sales-legend" class="mt-6 flex flex-col gap-3" role="list">
+            <!-- Legend injected by dashboard.js -->
+          </ul>
+        </article>
+      </section>
+
+      <!-- Row 3: Data Table (full width) -->
+      <section aria-label="Top selling products" class="rounded-xl bg-white p-6 shadow-sm" dir="rtl">
+        <h2 class="mb-4 text-lg font-semibold text-slate-700">لیستی ئۆردەرەکان</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[640px] border-collapse text-right">
+            <thead>
+              <tr class="border-b border-slate-100">
+                <th scope="col" class="py-3 pr-4 text-xs uppercase tracking-wide text-slate-400">ناوی کڕیار</th>
+                <th scope="col" class="py-3 pr-4 text-xs uppercase tracking-wide text-slate-400">ناونیشان</th>
+                <th scope="col" class="py-3 pr-4 text-xs uppercase tracking-wide text-slate-400">بەرواری داواکردن</th>
+                <th scope="col" class="py-3 pr-4 text-xs uppercase tracking-wide text-slate-400">پارچە/خزمەتگوزاری</th>
+                <th scope="col" class="py-3 pr-4 text-xs uppercase tracking-wide text-slate-400">بڕ</th>
+                <th scope="col" class="py-3 pr-4 text-xs uppercase tracking-wide text-slate-400">کۆی گشتی</th>
+                <th scope="col" class="py-3 pr-4 text-xs uppercase tracking-wide text-slate-400">دۆخ / کردار</th>
+              </tr>
+            </thead>
+            <tbody id="orders-body"><!-- Rows injected by dashboard.js --></tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination Controls -->
+        <div class="flex items-center justify-between mt-4 px-4">
+          <div id="pagination-info" class="text-sm text-slate-500">
+            <!-- Page info injected by dashboard.js -->
+          </div>
+          <div class="flex gap-2">
+            <button id="prev-page" class="px-4 py-2 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+              پێشتر
+            </button>
+            <button id="next-page" class="px-4 py-2 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+              دواتر
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Conflict Resolution Modal -->
+  <div id="conflictModal" class="conflict-modal">
+    <div class="conflict-modal-content">
+      <h3 class="conflict-modal-title">⚠️ هۆشداری</h3>
+      <p class="conflict-modal-message">دوو بەکارهێنەر لە هەمان کاتدا پرۆسەی جیاوازیان لەسەر ئەم داواکارییە ئەنجامداوە.
+      </p>
+      <div class="conflict-modal-actions" id="conflictModalActions">
+        <!-- Action buttons will be injected by JS -->
+      </div>
+      <button class="conflict-modal-close" id="conflictModalClose">داخستن</button>
+    </div>
+  </div>
+
+  <!-- Unified Rejection Modal -->
+  <div id="rejection-modal" class="pos-modal rejection-modal">
+    <div class="pos-modal-backdrop"></div>
+    <div class="pos-modal-content">
+      <div class="pos-modal-header">
+        <h3>هۆکاری ڕەتکردنەوەکە چیبوو؟</h3>
+        <button class="pos-modal-close" onclick="closeRejectionModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="pos-modal-body">
+        <div class="rejection-buttons-container">
+          <!-- Buttons will be generated dynamically by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Others Drill-Down Modal -->
+  <div id="others-modal" class="others-dropdown-modal">
+    <div class="modal-header">
+      <h3 class="font-bold text-lg">وردەکاری خزمەتگوزارییەکانی ئەوانی تر</h3>
+      <button type="button" id="close-others-modal" class="modal-close-btn">&times;</button>
+    </div>
+    <div id="others-modal-body" class="p-4 space-y-2">
+      <!-- Dynamically injected list of services and counts -->
+    </div>
+  </div>
+
+  <!-- Customer Note Modal -->
+  <div id="customerNoteModal" class="customer-note-modal hidden">
+    <div class="customer-note-modal-content">
+      <div class="customer-note-modal-header">
+        <h3 class="font-bold text-lg">تێبینی کڕیار</h3>
+        <button type="button" id="close-customer-note-modal" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="customer-note-modal-body">
+        <p id="customer-note-text" class="text-slate-700"></p>
+      </div>
+      <div class="customer-note-modal-footer">
+        <button type="button" id="close-customer-note-btn" class="glass-btn">لابردن</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/global-utils.js"></script>
+  <script src="js/rejection-modal.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+
+</html>

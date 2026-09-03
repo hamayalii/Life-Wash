@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>غەسلی لایف — باشترین خزمەتگوزاری پاککردنەوە</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/glass-tile-grid.css" />
+  <link rel="icon" href="assets/favicon.png" />
+</head>
+
+<body>
+  <div id="successBanner" class="success-banner" role="alert" aria-live="assertive">
+    <div class="banner-content">
+      <div class="banner-text">
+        <i class="fa-solid fa-circle-check" style="color: #1c8a5a;"></i>
+        <span id="successBannerText">داواکەت بە سەرکەوتوویی گەیشت! چاوەڕێی پەیوەندیمان بکە</span>
+      </div>
+      <button type="button" class="banner-close" aria-label="Close"
+        onclick="document.getElementById('successBanner').classList.remove('active')">&times;</button>
+    </div>
+  </div>
+  <main>
+
+    <!-- ============ SECTION 1 — HERO (Washing state) ============ -->
+    <section class="section hero" id="section1">
+      <img class="bg" src="assets/Background.webp" alt="Bright blue sky with soft clouds" />
+      <div class="hero-mask"></div>
+
+      <!-- Rug lives INSIDE section 1 only. Sticky so it is pinned within this
+           container, then JS slides it out to translateX(-100vw) as section 1 exits. -->
+      <nav class="nav">
+        <div class="brand">
+          <svg class="drop" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2s7 7.6 7 12a7 7 0 1 1-14 0c0-4.4 7-12 7-12Z" stroke="currentColor" stroke-width="1.6" />
+          </svg>
+          <span style="color: var(--accent);">خزمەتگوزاری غەسلی لایف</span>
+        </div>
+        <div class="nav-actions">
+          <button id="loginBtn" class="btn btn-secondary nav-login-btn">چوونەژوورەوە</button>
+          <div id="adminMenu" class="admin-menu hidden">
+            <button id="adminToggle" class="btn btn-secondary admin-toggle" style="color: var(--accent);"><i class="fa-solid fa-bars"></i>
+              ئەدمین</button>
+            <div class="admin-dropdown hidden">
+              <a href="/pos.html">خاڵی داواکردن (POS)</a>
+              <a href="/dashboard.html">داشبۆرد</a>
+              <a href="/report.html">ئامار</a>
+              <a href="/settings.html">ڕێکخستنی نرخەکان</a>
+              <button id="logoutBtn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i>
+                چوونەدەرەوە</button>
+            </div>
+          </div>
+          <a href="#book" class="btn btn-primary">داواکردنی تیمەکانمان</a>
+        </div>
+      </nav>
+
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow light">باشترین خزمەتگوزاری پاککردنەوە</span>
+          <h1>فەرشەکانت وەک ڕۆژی یەکەم لێ بکەرەوە</h1>
+          <p>شۆردنی فەرش، کومبار و قەنەفە بە تازەترین ئامێری سەردەمیانە و باشترین شامپۆی تورکی و ئەڵمانی. خزمەتگوزاری
+            گواستنەوە بێ بەرامبەرە!</p>
+          <div class="hero-actions">
+            <a href="#book" class="btn btn-accent">داوای گواستنەوەی خۆڕایی بکە</a>
+            <ul class="feature-row">
+              <li><i class="fa-solid fa-leaf" aria-hidden="true" style="color: #2fa8c9;"></i>باشترین پاکەرەوە
+              </li>
+              <li><i class="fa-solid fa-wind" aria-hidden="true" style="color: #2fa8c9;"></i>گواستنەوەی
+                خۆڕایی</li>
+              <li><i class="fa-solid fa-stopwatch" aria-hidden="true" style="color: #2fa8c9;"></i>گەڕاندنەوە
+                لە ماوەی هەفتەیەکدا</li>
+            </ul>
+          </div>
+          <picture>
+            <source srcset="assets/man_with_carpets.webp" type="image/webp">
+            <img class="mobile-only-image" src="assets/man_with_carpets.png" loading="lazy"
+              alt="A Man Holding Three Carpets">
+          </picture>
+        </div>
+      </div>
+
+      <div class="scroll-cue"><span>بڕۆ خوارەوە بۆ تۆمارکردن</span><span class="chev"><i
+            class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></div>
+    </section>
+
+    <!-- ============ SECTION 2 — CONVERSION (Cart System) ============ -->
+    <section class="section form-section" id="book">
+      <div class="blend-top"></div>
+      <div class="blend-bottom"></div>
+      <div class="form-wrap">
+        <header class="form-intro">
+          <span class="eyebrow accent">پاکوخاوێنی تەواو بەدەست بهێنە</span>
+          <h2 class="on-dark">خاوێنکردنەوە لە ئێمە و ئاسودەیی بۆ ئێوە! شتومەکەکانتان دەبەین و بە بۆنخۆشی و خاوێنی
+            دەیدەینەوە دەستتان، بە داشکاندنێکی بێوێنەوە بۆ هەموو کارەکانمان.</h2>
+        </header>
+
+        <form id="leadForm" class="card" novalidate>
+          <h3>داواکارییەکەت لێرە تۆمار بکە</h3>
+          <p class="muted">خزمەتگوزارییەکانت دیاری بکە و زانیارییەکانت بنێرە</p>
+
+          <div class="grid-2">
+            <div class="field"><label for="name">ناوی تەواو</label><input id="name" name="name" type="text"
+                placeholder="ناوی خۆت بنوسە" required /></div>
+            <div class="field"><label for="phone">ژمارە مۆبایل</label><input id="phone" name="phone" type="tel"
+                placeholder="0750-123-4567" required /></div>
+          </div>
+          <div class="field"><label for="address">ناونیشانی وەرگرتن</label><input id="address" name="address"
+              type="text" placeholder="ناونیشانی خۆت بنوسە" /></div>
+
+          <!-- Service Selection Grid -->
+          <div class="field">
+            <label>خزمەتگوزارییەکان هەڵبژێرە (دەتوانی چەند خزمەتگوزارییەک هەڵبژێریت)</label>
+            <div id="service-cards-container" class="service-cards-container">
+              <div class="loading-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <p>بارکردنی خزمەتگوزارییەکان...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cart Display -->
+          <div id="cart-container" class="cart-container" style="display: none;">
+            <h4>لیستی ئەو خزمەتگوزاریانەی هەڵتبژاردووە</h4>
+            <div id="cart-items" class="cart-items"></div>
+            <div class="cart-total-section">
+              <span class="cart-total-label">کۆی گشتی:</span>
+              <span id="cart-total" class="cart-total-amount">0 IQD</span>
+            </div>
+          </div>
+
+          <!-- Dynamic Quantity Inputs -->
+          <div id="dynamic-inputs-container" class="dynamic-inputs-container" style="display: none;">
+            <div id="cart-item-inputs" class="cart-item-inputs"></div>
+          </div>
+
+          <div class="field"><label for="message">تێبینی</label><textarea id="message" name="message" rows="3"
+              placeholder="تێبینی زیاتر (ئارەزوومەندانە)"></textarea></div>
+
+          <button type="submit" id="submitBtn" class="btn btn-accent full" disabled>داواکردنی تیمەکانمان</button>
+          <p class="assurance"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i>تازەترین ئامێری سەردەم ·
+            گرەنتی پاکی و بریقەدانەوە</p>
+          <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 3 — CONTACT (Clean state) ============ -->
+    <section class="section contact" id="section3">
+      <img class="bg" src="assets/Background.webp" alt="Bright open sky" />
+      <div class="contact-top-blend"></div>
+      <div class="contact-veil"></div>
+
+      <div class="contact-wrap">
+        <div class="contact-copy">
+          <span class="eyebrow accent">خاوێن · بۆنخۆش · نوێکراوە</span>
+          <h2>با فەرشەکانت بریقە بدەنەوە</h2>
+          <p class="muted-dark">پەیوەندیمان پێوە بکەن یان سەردانمان بکەن بۆ زانیاری زیاتر.</p>
+          <ul class="contact-list">
+            <li><span class="ico"><i class="fa-solid fa-phone" aria-hidden="true"></i></span> <a href="tel:07701464248"
+                dir="ltr">٠٧٧٠١٤٦٤٢٤٨</a> / <a href="tel:07719703674" dir="ltr">٠٧٧١٩٧٠٣٦٧٤</a></li>
+            <li><span class="ico"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span>سلێمانی - گەڕەکی
+              سەروەری - نزیک قوتابخانەی نوا</li>
+          </ul>
+          <a href="tel:07701464248" class="btn btn-accent big"><i class="fa-solid fa-phone"
+              aria-hidden="true"></i>پەیوەندی بکە</a>
+        </div>
+        <footer class="site-footer">© 2026 غەسلی ئۆتۆماتیکی لایف · گواستنەوەی پارێزراو · گرەنتی پاکوخاوێنی
+        </footer>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="loginModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-content">
+      <button type="button" class="modal-close" aria-label="Close" id="closeLoginModal">&times;</button>
+      <h3>چوونەژوورەوەی ئەدمین</h3>
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="username">ناوی بەکارهێنەر</label>
+          <input id="username" name="username" type="text" placeholder="ناوی بەکارهێنەر" required />
+        </div>
+        <div class="field">
+          <label for="password">وشەی نهێنی</label>
+          <input id="password" name="password" type="password" placeholder="وشەی نهێنی" required />
+        </div>
+        <button type="submit" class="btn btn-accent full">چوونەژوورەوە</button>
+        <p class="form-status" id="loginStatus" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/global-utils.js"></script>
+  <script src="js/dynamic-services.js"></script>
+  <script src="js/script.js?v=2.0"></script>
+</body>
+
+</html>

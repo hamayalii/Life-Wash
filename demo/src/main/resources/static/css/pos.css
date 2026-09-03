@@ -1,0 +1,765 @@
+
+/* Intelligently apply custom font while excluding Icon Fonts */
+body,
+html,
+input,
+button,
+select,
+textarea,
+label,
+div,
+span,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+table,
+th,
+td,
+a,
+li {
+  font-family: 'Arkan Favorit', sans-serif !important;
+}
+
+/* Explicitly protect and restore Font Awesome & Icon Classes */
+i,
+.fa,
+.fas,
+.far,
+.fal,
+.fab,
+.fad,
+.fa-solid,
+.fa-regular,
+.fa-brands,
+[class^="fa-"],
+[class*=" fa-"],
+[class^="icon-"],
+[class*=" icon-"] {
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome", sans-serif !important;
+}
+
+/* Ensure Icon pseudo-elements retain their native icon font */
+.fa::before,
+.fas::before,
+.far::before,
+.fab::before,
+[class^="fa-"]::before,
+[class*=" fa-"]::before {
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome" !important;
+}
+
+/* POS-specific styles - maintains design system consistency */
+
+/* Split-screen layout */
+.pos-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  min-height: calc(100vh - 120px);
+}
+
+@media (max-width: 1024px) {
+  .pos-layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+}
+
+/* POS Card styling */
+.pos-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section titles */
+.pos-section-title {
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--foam);
+}
+
+.pos-section-title i {
+  color: var(--accent);
+}
+
+/* Left Panel: Cart */
+.pos-cart-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.pos-cart-items {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 200px;
+  max-height: calc(100vh - 400px);
+  margin-bottom: 1rem;
+}
+
+/* Cart empty state */
+.pos-cart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.pos-cart-empty i {
+  font-size: 3rem;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.pos-cart-empty p {
+  font-size: 0.95rem;
+}
+
+/* Cart item */
+.pos-cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--foam);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.pos-cart-item:hover {
+  background: #e0eff5;
+}
+
+.pos-cart-item-info {
+  flex: 1;
+}
+
+.pos-cart-item-name {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.pos-cart-item-details {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.pos-cart-item-price {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.95rem;
+  margin-left: 0.5rem;
+}
+
+/* Cart item actions */
+.pos-cart-item-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 0.75rem;
+}
+
+.pos-cart-item-btn {
+  background: white;
+  border: 1px solid rgba(14, 44, 77, 0.15);
+  border-radius: 0.375rem;
+  padding: 0.375rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.pos-cart-item-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.pos-cart-item-btn.delete:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+/* Cart summary */
+.pos-cart-summary {
+  padding-top: 1rem;
+  border-top: 2px solid var(--foam);
+}
+
+.pos-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.pos-grand-total {
+  color: var(--accent);
+  font-size: 1.25rem;
+}
+
+.pos-execute-btn {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.pos-execute-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Right Panel: Services Grid */
+.pos-services-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.pos-services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .pos-services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+/* Service card */
+.pos-service-card {
+  background: var(--foam);
+  border: 2px solid transparent;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.pos-service-card:hover {
+  background: white;
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(47, 168, 201, 0.2);
+  transform: translateY(-2px);
+}
+
+.pos-service-card:active {
+  transform: translateY(0);
+}
+
+.pos-service-icon {
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pos-service-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pos-service-name {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.pos-service-price {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Anchoring effect - strikethrough for original price */
+.pos-price-strikethrough {
+  text-decoration: line-through;
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
+/* Anchoring effect - prominent discounted price */
+.pos-price-discounted {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* Modal styles */
+.pos-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.pos-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pos-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 36, 64, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.pos-modal-content {
+  position: relative;
+  background: white;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 1rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.pos-modal.active .pos-modal-content {
+  transform: translateY(0);
+}
+
+.pos-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 2px solid var(--foam);
+}
+
+.pos-modal-header h3 {
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+}
+
+.pos-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.pos-modal-close:hover {
+  color: var(--primary);
+}
+
+.pos-modal-body {
+  padding: 1.5rem;
+}
+
+.pos-modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem;
+  border-top: 2px solid var(--foam);
+}
+
+/* Form fields */
+.pos-form-field {
+  margin-bottom: 1.25rem;
+}
+
+.pos-form-field label {
+  display: block;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.pos-form-field input,
+.pos-form-field textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(14, 44, 77, 0.15);
+  border-radius: 0.5rem;
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 0.95rem;
+  color: var(--foreground);
+  background: var(--foam);
+  transition: all 0.2s ease;
+}
+
+.pos-form-field input:focus,
+.pos-form-field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(47, 168, 201, 0.2);
+}
+
+.pos-form-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.pos-unit-label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.pos-negotiated-price-field.hidden {
+  display: none;
+}
+
+/* Receipt modal */
+.pos-receipt-content {
+  max-width: 400px;
+}
+
+.pos-receipt-body {
+  padding: 1.5rem;
+  background: var(--foam);
+  margin: 1rem;
+  border-radius: 0.5rem;
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 0.9rem;
+}
+
+.pos-receipt-header {
+  text-align: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed var(--muted);
+}
+
+.pos-receipt-header h4 {
+  font-size: 1.1rem;
+  color: var(--primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.pos-receipt-customer {
+  margin-bottom: 1rem;
+}
+
+.pos-receipt-customer p {
+  margin: 0.25rem 0;
+  color: var(--foreground);
+}
+
+.pos-receipt-items {
+  margin: 1rem 0;
+  border-top: 1px dashed var(--muted);
+  border-bottom: 1px dashed var(--muted);
+  padding: 1rem 0;
+}
+
+.pos-receipt-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.pos-receipt-total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-top: 1rem;
+}
+
+/* Loading state */
+.pos-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.pos-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pos-cart-items {
+    max-height: 300px;
+  }
+
+  .pos-services-grid {
+    gap: 0.75rem;
+  }
+
+  .pos-service-card {
+    padding: 1rem;
+  }
+
+  .pos-modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+}
+
+/* Print Media Query - Hide everything except receipt */
+@media print {
+
+  /* Hide all elements except receipt modal and its content */
+  body>*:not(#receipt-modal) {
+    display: none !important;
+  }
+
+  /* Show receipt modal */
+  #receipt-modal {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    position: static !important;
+  }
+
+  /* Hide receipt modal backdrop */
+  #receipt-modal .pos-modal-backdrop {
+    display: none !important;
+  }
+
+  /* Style receipt modal content for print */
+  #receipt-modal .pos-modal-content {
+    box-shadow: none;
+    border: 1px solid #000;
+    max-width: 100%;
+    transform: none !important;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Hide receipt modal header close button and footer buttons */
+  #receipt-modal .pos-modal-header,
+  #receipt-modal .pos-modal-footer {
+    display: none !important;
+  }
+
+  /* Style receipt body for print */
+  .pos-receipt-body {
+    margin: 0;
+    padding: 1rem;
+    border: none;
+    background: white;
+    color: black;
+  }
+
+  /* Ensure text is black for printing */
+  .pos-receipt-body * {
+    color: black !important;
+  }
+
+  /* Ensure borders are visible */
+  .pos-receipt-header,
+  .pos-receipt-items {
+    border-color: #000 !important;
+  }
+}
+
+/* Rejection Modal Styles */
+.rejection-modal .pos-modal-content {
+  max-width: 450px;
+}
+
+.rejection-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rejection-reason-btn {
+  width: 100%;
+  padding: 16px 20px;
+  background: var(--foam);
+  border: 2px solid transparent;
+  border-radius: 0.75rem;
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.rejection-reason-btn:hover {
+  background: white;
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(47, 168, 201, 0.2);
+  transform: translateY(-2px);
+}
+
+.rejection-reason-btn:active {
+  transform: translateY(0);
+}
+
+/* History Modal Styles */
+.history-modal-content {
+  max-width: 600px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.history-item {
+  background: var(--foam);
+  border-radius: 0.75rem;
+  padding: 16px;
+  border: 1px solid rgba(14, 44, 77, 0.1);
+  transition: all 0.2s ease;
+}
+
+.history-item:hover {
+  background: white;
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(47, 168, 201, 0.15);
+}
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(14, 44, 77, 0.1);
+}
+
+.history-item-id {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+.history-item-date {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.history-item-customer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: var(--foreground);
+}
+
+.history-item-customer i {
+  color: var(--accent);
+}
+
+.history-item-total {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+.history-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.history-item-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 0.5rem;
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-item-btn.reject {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.history-item-btn.reject:hover {
+  background: #dc2626;
+  color: white;
+  border-color: #dc2626;
+}
+
+.history-item-btn.view {
+  background: white;
+  color: var(--primary);
+  border: 1px solid rgba(14, 44, 77, 0.15);
+}
+
+.history-item-btn.view:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}

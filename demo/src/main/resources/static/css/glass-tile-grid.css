@@ -1,0 +1,62 @@
+/* Glass Tile Grid - Lower Triangular Matrix with Stochastic Decay */
+/* Positioned absolutely at top-right with z-index isolation */
+
+.glass-tile-grid-container {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none !important;
+}
+
+.glass-tile-grid-container.top-grid {
+  top: -20px;
+  right: -20px;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 95%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 95%);
+}
+
+.glass-tile-grid {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  rotate: 90deg;
+}
+
+.glass-tile-row {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  gap: 2px;
+}
+
+.glass-tile {
+  width: 96px;
+  height: 96px;
+  border-radius: 19.2px;
+  background-color: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(1);
+  -webkit-backdrop-filter: blur(20px) saturate(1);
+  box-shadow:
+    3px 3px 8px rgba(0, 0, 0, 0.06),
+    inset 0 0 15px rgba(255, 255, 255, 0.10),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* Ensure header remains clickable */
+.nav {
+  position: relative;
+  z-index: 1001 !important;
+  pointer-events: auto !important;
+}
+
+@media (max-width: 560px) {
+  .glass-tile {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+}

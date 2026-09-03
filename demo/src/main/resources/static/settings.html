@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ڕێکخستنی نرخەکان - سیستەمی خزمەتگوزاری</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- QR Code Library (Client-Side Only - Zero Server Load) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <link rel="icon" href="data:," />
+    <style>
+        .settings-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        .settings-header {
+            text-align: center;
+            margin-bottom: 32px;
+            color: var(--primary);
+        }
+        
+        /* Tab Navigation */
+        .settings-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--foam);
+            padding-bottom: 0;
+        }
+        
+        .settings-tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-family: 'ArkanEffra', sans-serif !important;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            top: 2px;
+        }
+        
+        .settings-tab:hover {
+            color: var(--primary);
+            background: var(--foam);
+        }
+        
+        .settings-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--accent);
+            font-weight: 600;
+        }
+        
+        /* CSS Grid Layout */
+        #pricing-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            #pricing-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .pricing-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid rgba(14, 44, 77, 0.1);
+        }
+        
+        .pricing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--foam);
+        }
+        
+        .service-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .service-name-en {
+            font-size: 13px;
+            color: var(--muted);
+            margin-right: 8px;
+        }
+        
+        .price-input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .input-wrapper {
+            flex: 1;
+        }
+        
+        .input-label {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        
+        .price-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid rgba(14, 44, 77, 0.15);
+            border-radius: 6px;
+            font-size: 14px;
+            background: var(--foam);
+            color: var(--primary);
+            font-family: 'ArkanEffra', sans-serif !important;
+        }
+        
+        .price-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(47, 168, 201, 0.15);
+        }
+        
+        .price-input:disabled {
+            background: rgba(14, 44, 77, 0.05);
+            cursor: not-allowed;
+        }
+        
+        .discount-section {
+            background: rgba(254, 243, 199, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            border: 1px solid rgba(146, 64, 14, 0.15);
+        }
+        
+        .discount-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .discount-toggle {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .discount-label {
+            font-weight: 500;
+            color: #92400e;
+            font-size: 13px;
+        }
+        
+        .date-inputs {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .date-input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid rgba(14, 44, 77, 0.15);
+            border-radius: 6px;
+            font-size: 13px;
+            background: var(--foam);
+            color: var(--primary);
+            font-family: 'ArkanEffra', sans-serif !important;
+        }
+        
+        .sofa-preview {
+            background: rgba(240, 249, 255, 0.6);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid rgba(186, 230, 253, 0.5);
+        }
+        
+        .per-person-rate {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        
+        .save-btn {
+            background: var(--accent);
+            color: var(--accent-foreground);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 12px;
+            font-family: 'ArkanEffra', sans-serif !important;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+        
+        .save-btn:hover {
+            background: #2896b5;
+        }
+        
+        /* Tab Content Areas */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .placeholder-content {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--muted);
+        }
+        
+        .placeholder-content i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: var(--accent);
+            opacity: 0.5;
+        }
+        
+        .placeholder-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        
+        .placeholder-content p {
+            font-size: 1rem;
+        }
+        
+        /* Toast Notification System */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--card);
+            border-left: 4px solid var(--accent);
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            min-width: 300px;
+            max-width: 90%;
+        }
+        
+        .toast-notification.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        .toast-notification.success {
+            border-left-color: var(--accent);
+        }
+        
+        .toast-notification.error {
+            border-left-color: #c0392b;
+        }
+        
+        .toast-notification i {
+            font-size: 20px;
+        }
+        
+        .toast-notification.success i {
+            color: var(--accent);
+        }
+        
+        .toast-notification.error i {
+            color: #c0392b;
+        }
+        
+        .toast-message {
+            font-family: 'ArkanEffra', sans-serif !important;
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            margin-right: auto;
+            transition: color 0.2s ease;
+        }
+        
+        .toast-close:hover {
+            color: var(--primary);
+        }
+        
+        /* Mobile-First Responsive Design */
+        @media (max-width: 768px) {
+            .settings-container {
+                padding: 16px;
+            }
+            
+            .settings-tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 0;
+            }
+            
+            .settings-tab {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+                flex-shrink: 0;
+            }
+            
+            #pricing-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .pricing-card {
+                padding: 14px;
+            }
+            
+            .price-input-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .date-inputs {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .settings-header {
+                font-size: 1.5rem;
+                margin-bottom: 24px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .settings-container {
+                padding: 12px;
+            }
+            
+            .settings-tabs {
+                gap: 4px;
+            }
+            
+            .settings-tab {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+            
+            .pricing-card {
+                padding: 12px;
+            }
+            
+            .service-name {
+                font-size: 15px;
+            }
+            
+            .service-name-en {
+                font-size: 12px;
+            }
+            
+            .input-label {
+                font-size: 10px;
+            }
+            
+            .price-input {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            
+            .save-btn {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+            
+            .toast-notification {
+                min-width: auto;
+                width: 90%;
+                padding: 12px 16px;
+            }
+        }
+        
+        /* Marketing/QR Code Section Styles */
+        .marketing-section {
+            padding: 20px;
+        }
+        
+        .marketing-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-family: 'ArkanEffra', sans-serif !important;
+        }
+        
+        .marketing-section-description {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-family: 'ArkanEffra', sans-serif !important;
+        }
+        
+        .qr-input-group {
+            margin-bottom: 24px;
+        }
+        
+        .qr-canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            background: var(--foam);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 2px dashed rgba(14, 44, 77, 0.15);
+        }
+        
+        #marketingQrCanvas {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        @media (max-width: 480px) {
+            .qr-canvas-container {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <h1 class="settings-header">ڕێکخستنەکان</h1>
+
+        <div id="adminMenu" class="admin-menu hidden">
+            <button id="adminToggle" class="btn btn-secondary admin-toggle"><i class="fa-solid fa-bars"></i>
+              ئەدمین</button>
+            <div class="admin-dropdown hidden">
+                <a href="/index.html">سەرەکی</a>
+                <a href="/dashboard.html">داشبۆرد</a>
+              <a href="/pos.html">خاڵی داواکردن (POS)</a>
+              <a href="/report.html">ئامار</a>
+              <button id="logoutBtn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i>
+                چوونەدەرەوە</button>
+            </div>
+          </div>
+        
+        <!-- Tab Navigation -->
+        <div class="settings-tabs">
+            <button class="settings-tab active" data-tab="pricing">
+                <i class="fa-solid fa-tags"></i>
+                ڕێکخستنی نرخەکان
+            </button>
+            <button class="settings-tab" data-tab="new-service">
+                <i class="fa-solid fa-plus-circle"></i>
+                زیادکردنی خزمەتگوزارییەکی تازە
+            </button>
+            <button class="settings-tab" data-tab="backup-management">
+                <i class="fa-solid fa-database"></i>
+                باکئەپ و گەڕاندنەوە
+            </button>
+            <button class="settings-tab" data-tab="marketing">
+                <i class="fa-solid fa-qrcode"></i>
+                رێکلام / Marketing
+            </button>
+        </div>
+        
+        <!-- Tab Content: Pricing Settings -->
+        <div id="tab-pricing" class="tab-content active">
+            <div id="pricing-container">
+                <!-- Pricing cards will be dynamically loaded here -->
+            </div>
+        </div>
+        
+        <!-- Tab Content: Add New Service Type -->
+        <div id="tab-new-service" class="tab-content">
+            <div class="new-service-form-container">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <div>
+                            <span class="service-name">زیادکردنی خزمەتگوزارییەکی تازە</span>
+                        </div>
+                    </div>
+                    
+                    <form id="newServiceForm" class="new-service-form">
+                        <div class="price-input-group">
+                            <div class="input-wrapper">
+                                <label class="input-label">ناوی خزمەتگوزاری (بە کوردی)</label>
+                                <input type="text" class="price-input" 
+                                       id="serviceNameKurdish"
+                                       placeholder="نموونە: پاککردنەوەی سەیارە"
+                                       required>
+                            </div>
+                            <div class="input-wrapper">
+                                <label class="input-label">ناوی خزمەتگوزاری (بە ئینگلیزی)</label>
+                                <input type="text" class="price-input" 
+                                       id="serviceNameEnglish"
+                                       placeholder="نموونە: CAR_CLEANING"
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <div class="price-input-group">
+                            <div class="input-wrapper">
+                                <label class="input-label">نرخی شووشتنی خزمەتگوزاری (IQD)</label>
+                                <input type="number" class="price-input" 
+                                       id="basePrice"
+                                       placeholder="0.00"
+                                       min="0"
+                                       step="0.01"
+                                       required>
+                            </div>
+                            <div class="input-wrapper">
+                                <label class="input-label">یەکەی ىر</label>
+                                <select class="price-input" id="pricingUnit" required>
+                                    <option value="">هەڵبژێرە...</option>
+                                    <option value="PER_METER">مەتر</option>
+                                    <option value="PER_PIECE">دانە</option>
+                                    <option value="PER_PERSON">نەفەر/کەس</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="price-input-group" id="sofaSetSizeGroup" style="display: none;">
+                            <div class="input-wrapper">
+                                <label class="input-label">قەنەفە - ستاندارد (ژمارەی کەس/نەفەر)</label>
+                                <input type="number" class="price-input" 
+                                       id="sofaStandardSetSize"
+                                       placeholder="10"
+                                       min="1"
+                                       value="10">
+                            </div>
+                        </div>
+                        
+                        <div class="price-input-group">
+                            <div class="input-wrapper" style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="isCustomPriced" style="width: 20px; height: 20px; cursor: pointer;">
+                                <label class="input-label" for="isCustomPriced" style="margin: 0; cursor: pointer;">
+                                    ئەم خزمەتگوزارییە نرخی جێگیر نییە (پێویستی بە سەیرکردنی ڕووبەڕوو هەیە)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="save-btn">
+                            <i class="fa-solid fa-plus"></i>
+                            زیادکردنی خزمەتگوزاری
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Content: Backup Management -->
+        <div id="tab-backup-management" class="tab-content hidden">
+            <div class="backup-management-container">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <div>
+                            <span class="service-name">باسکئەپ و گەڕاندنەوەی داتابەیس</span>
+                        </div>
+                    </div>
+                    
+                    <div class="backup-section">
+                        <h3 class="backup-section-title">داگرتنی تازەترین باکئەپ</h3>
+                        <p class="backup-section-description">
+                            داتابەیسەکە دەگرێتەوە لە ساتی ئێستا (نرخەکان، داواکارییەکان، و ھەموو داتا)
+                        </p>
+                        <button id="downloadBackupBtn" class="backup-btn backup-btn-download">
+                            <i class="fa-solid fa-download"></i>
+                            داگرتنی باکئەپ
+                        </button>
+                    </div>
+                    
+                    <div class="backup-divider"></div>
+                    
+                    <div class="backup-section">
+                        <h3 class="backup-section-title">گەڕاندنەوەی باکئەپ</h3>
+                        <p class="backup-section-description">
+                            فایلی باکئەپ (.sql یان .sql.gz) هەڵبژێرە بۆ گەڕاندنەوەی داتا
+                            <br>
+                            <span class="backup-warning">⚠️ ئاگاداربە: ئەمە داتای ئێستا دەسڕێتەوە و جێگەی دەگرێتەوە</span>
+                        </p>
+                        <div class="restore-upload-container">
+                            <input type="file" id="restoreFileInput" accept=".sql,.sql.gz" class="restore-file-input">
+                            <button id="restoreBackupBtn" class="backup-btn backup-btn-restore">
+                                <i class="fa-solid fa-upload"></i>
+                                گەڕاندنەوەی باکئەپ
+                            </button>
+                        </div>
+                        <div id="restoreStatus" class="restore-status hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab Content: Marketing / QR Code Generation -->
+        <div id="tab-marketing" class="tab-content hidden">
+            <div class="marketing-container">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <div>
+                            <span class="service-name">رێکلام / Marketing QR Code</span>
+                        </div>
+                    </div>
+                    
+                    <div class="marketing-section">
+                        <h3 class="marketing-section-title">دروستکردنی کیو ئاڕ کۆد بۆ مەبەستی مارکێتینگ</h3>
+                        <p class="marketing-section-description">
+                            کیو ئاڕ کۆد دروست بکە کە ڕاستەوخۆ دەتباتە سەر فۆڕمی داواکاری لە ماڵپەڕەکە
+                        </p>
+                        
+                        <div class="qr-input-group">
+                            <label class="input-label">بەستەری ماڵپەڕەکە (URL)</label>
+                            <input type="url" 
+                                   id="marketingUrlInput" 
+                                   class="price-input" 
+                                   placeholder="https://example.com/"
+                                   value="">
+                        </div>
+                        
+                        <div class="qr-canvas-container">
+                            <canvas id="marketingQrCanvas"></canvas>
+                        </div>
+                        
+                        <button id="downloadQrBtn" class="save-btn">
+                            <i class="fa-solid fa-download"></i>
+                            داگرتنی کیو ئاڕ کۆد
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/global-utils.js"></script>
+    <script src="js/settings.js"></script>
+    
+    <!-- Conflict Resolution Modal -->
+    <div id="conflict-modal" class="pos-modal conflict-modal">
+        <div class="pos-modal-backdrop"></div>
+        <div class="pos-modal-content">
+            <div class="pos-modal-header">
+                <h3>⚠️ هۆشداری</h3>
+                <button class="pos-modal-close" id="conflict-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="pos-modal-body">
+                <p class="conflict-modal-message">دوو بەکارهێنەر لە هەمان کاتدا پرۆسەی جیاوازیان لەسەر ئەم داواکارییە ئەنجامداوە.</p>
+                <div class="conflict-modal-actions" id="conflict-modal-actions">
+                    <!-- Action buttons will be injected by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

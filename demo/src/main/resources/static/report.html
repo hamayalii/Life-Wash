@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ڕاپۆرت و ئامار - Ghasl Service</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/report.css" />
+  <link rel="icon" href="data:," />
+</head>
+
+<body class="min-h-screen w-full bg-slate-100 font-sans text-slate-800">
+  <!-- Full-width container -->
+  <main class="w-full px-4 py-6 sm:px-8 sm:py-8">
+    <div class="mx-auto flex w-full max-w-[1600px] flex-col gap-6">
+      <header class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-slate-700">ئامار</h1>
+        <div class="nav-actions">
+          <div id="adminMenu" class="admin-menu hidden">
+            <button id="adminToggle" class="btn btn-secondary admin-toggle"><i class="fa-solid fa-bars"></i>
+              ئەدمین</button>
+            <div class="admin-dropdown hidden">
+              <a href="/index.html">سەرەکی</a>
+              <a href="/dashboard.html">داشبۆرد</a>
+              <a href="/pos.html">خاڵی داواکردن (POS)</a>
+              <a href="/settings.html">ڕێکخستنەکان</a>
+              <button id="logoutBtn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i>
+                چوونەدەرەوە</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Widget Grid Container -->
+      <section class="widgets-grid">
+        <!-- Marketing ROI Gauge Chart Widget -->
+        <div class="report-widget-card">
+          <!-- Period Selector -->
+          <div class="widget-period-selector">
+            <div id="period-selector" class="period-selector">
+              <button class="period-button" data-period="today">ڕۆژ</button>
+              <button class="period-button active" data-period="week">هەفتە</button>
+              <button class="period-button" data-period="month">مانگ</button>
+            </div>
+          </div>
+
+          <!-- Widget Header -->
+          <div class="widget-header">
+            <h2>ئاماری قازانجی ڕێکلام و بەهای کڕیار</h2>
+          </div>
+
+          <!-- Metrics Row -->
+          <div class="metrics-row">
+            <div class="metric">
+              <span class="metric-label">خەرجی ڕێکلام/سپۆنسەر</span>
+              <div class="metric-input-wrapper">
+                <input type="number" id="input-ad-spend" class="metric-input" placeholder="بڕی پارەکە لێرە بنووسە..." min="0">
+                <button id="btn-save-ad-spend" class="save-btn" title="خەزنکردن">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+              </div>
+            </div>
+            <div class="metric">
+              <span class="metric-label">ژمارەی کڕیارە نوێیەکان</span>
+              <span class="metric-value" id="val-new-customers">0</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">تێچووی بەدەستهێنانی هەر کڕیارێک</span>
+              <span class="metric-value" id="val-cac">0 IQD</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">تێکڕای قازانجی هەر کڕیارێک</span>
+              <span class="metric-value" id="val-clv">0 IQD</span>
+            </div>
+          </div>
+
+          <!-- Gauge Chart Container -->
+          <div class="gauge-container">
+            <div id="gauge-chart-container">
+              <!-- SVG gauge will be rendered here by report.js -->
+            </div>
+          </div>
+
+          <!-- Ratio Label -->
+          <div class="ratio-label">
+            ڕێژەی قازانج: <span id="val-ratio">0.0</span> هێندە
+          </div>
+
+          <!-- Insight Footer -->
+          <div class="insight-footer">
+            <svg class="info-icon" id="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <p class="insight-text" id="insight-text">Loading...</p>
+          </div>
+        </div>
+
+        <div class="rekxer" style="display: grid; gap: 15px;">
+        <!-- Canceled Orders Analysis Widget -->
+        <div class="report-widget-card">
+          <div class="widget-header">
+            <h2>شیکاریی داواکارییە هەڵوەشاوەکان</h2>
+          </div>
+          
+          <div id="canceled-chart-container" class="canceled-chart-container">
+            <!-- Horizontal bar chart will be rendered here -->
+          </div>
+          
+          <div id="canceled-loading" class="loading-state hidden">
+            <div class="spinner"></div>
+            <p>داتا بار دەکرێت...</p>
+          </div>
+          
+          <div id="canceled-error" class="error-state hidden">
+            <i class="fa-solid fa-exclamation-circle"></i>
+            <p>هەڵە لە بارکردنی داتا</p>
+          </div>
+        </div>
+
+        <!-- Monthly Expenses Widget -->
+        <div class="report-widget-card">
+          <div class="widget-header">
+            <h2>خەرجییەکانی ئەم مانگە</h2>
+          </div>
+          
+          <div class="expenses-input-section">
+            <div class="expense-form-row">
+              <input type="number" id="expense-amount" placeholder="بڕ (IQD)" min="0" step="100">
+              <select id="expense-category">
+                <option value="">هەڵبژێرەری هاوخۆش</option>
+                <!-- Categories populated dynamically from API -->
+              </select>
+            </div>
+            <button id="btn-add-expense" class="btn btn-primary">زیادکردن</button>
+          </div>
+
+          <div id="expenses-loading" class="loading-state hidden">
+            <div class="spinner"></div>
+            <p>داتا بار دەکرێت...</p>
+          </div>
+
+          <div id="expenses-error" class="error-state hidden">
+            <i class="fa-solid fa-exclamation-circle"></i>
+            <p>هەڵە لە بارکردنی داتا</p>
+          </div>
+
+          <div id="expenses-list" class="expenses-list">
+            <!-- Expense items rendered here -->
+          </div>
+
+          <div class="expenses-total">
+            <span>کۆی گشتی:</span>
+            <span id="expenses-total-amount">0 IQD</span>
+          </div>
+        </div>
+        </div>
+
+        <!-- Pareto Analysis Widget -->
+        <div class="report-widget-card">
+          <!-- Period Selector -->
+          <div class="widget-period-selector">
+            <div id="pareto-period-selector" class="period-selector">
+              <button class="period-button" data-period="today">ڕۆژ</button>
+              <button class="period-button active" data-period="week">هەفتە</button>
+              <button class="period-button" data-period="month">مانگ</button>
+            </div>
+          </div>
+
+          <!-- Widget Header -->
+          <div class="widget-header">
+            <h2>شیکاری پارێتۆ بۆ قازانجی خزمەتگوزارییەکان (٨٠/٢٠)</h2>
+          </div>
+
+          <!-- Chart Container -->
+          <div class="pareto-chart-wrapper" dir="ltr">
+            <div id="pareto-chart-container"></div>
+            <div id="pareto-tooltip" class="tooltip"></div>
+          </div>
+
+          <!-- Insight Footer -->
+          <div class="insight-footer">
+            <p class="insight-text" id="pareto-insight-text">خزمەتگوزارییەکانی ژێر هێڵە سوورەکە ٨٠٪ی قازانجەکەت پێکدەهێنن.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Reports Generation Section -->
+    <section class="reports-section">
+      <div class="reports-container">
+        <div class="reports-header">
+          <h2>دروستکردنی ڕاپۆرت</h2>
+          <p class="reports-subtitle">ڕاپۆرتەکانی ڕۆژانە، مانگانە، و ساڵانە دروست بکە و دایەزەنە</p>
+        </div>
+        
+        <div class="reports-buttons-container">
+          <button class="report-button" data-report-type="DAILY">
+            <i class="fa-solid fa-calendar-day"></i>
+            <span>ڕاپۆرتی ڕۆژانە</span>
+          </button>
+          <button class="report-button" data-report-type="MONTHLY">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>ڕاپۆرتی مانگانە</span>
+          </button>
+          <button class="report-button" data-report-type="YEARLY">
+            <i class="fa-solid fa-calendar"></i>
+            <span>ڕاپۆرتی ساڵانە</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Report Modal -->
+  <div id="report-modal" class="report-modal hidden">
+    <div class="report-modal-backdrop"></div>
+    <div class="report-modal-content">
+      <div class="report-modal-header">
+        <h3 id="report-modal-title">ڕاپۆرت</h3>
+        <button class="report-modal-close" id="report-modal-close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <div class="report-modal-body">
+        <div id="report-loading" class="report-loading hidden">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <span>دروستکردنی ڕاپۆرت...</span>
+        </div>
+        
+        <div id="report-content" class="report-content hidden">
+          <pre id="report-text"></pre>
+        </div>
+        
+        <div id="report-error" class="report-error hidden">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span id="report-error-message"></span>
+        </div>
+      </div>
+      
+      <div class="report-modal-footer">
+        <button id="export-csv-btn" class="export-btn export-csv-btn">
+          <i class="fa-solid fa-file-csv"></i>
+          CSV
+        </button>
+        <button id="export-pdf-btn" class="export-btn export-pdf-btn">
+          <i class="fa-solid fa-file-pdf"></i>
+          PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/global-utils.js"></script>
+  <script src="js/report.js"></script>
+</body>
+
+</html>

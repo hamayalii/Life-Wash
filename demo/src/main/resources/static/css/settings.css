@@ -1,0 +1,176 @@
+/* Settings Page Styles */
+
+/* Backup Management Styles */
+.backup-management-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.backup-section {
+    padding: 24px 0;
+}
+
+.backup-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.backup-section-description {
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.backup-warning {
+    color: #dc2626;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.backup-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 24px 0;
+}
+
+.backup-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-family: 'Arkan Favorit', sans-serif !important;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.backup-btn-download {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.backup-btn-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.backup-btn-download:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.backup-btn-restore {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.backup-btn-restore:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.backup-btn-restore:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.restore-upload-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.restore-file-input {
+    padding: 10px 16px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    cursor: pointer;
+    font-family: 'Arkan Favorit', sans-serif !important;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.restore-file-input:hover {
+    border-color: #3b82f6;
+    background: #f1f5f9;
+}
+
+.restore-status {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: 'Arkan Favorit', sans-serif !important;
+    margin-top: 16px;
+}
+
+.restore-status.hidden {
+    display: none;
+}
+
+.restore-status-loading {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+}
+
+.restore-status-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+.restore-status-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .backup-management-container {
+        padding: 0 16px;
+    }
+    
+    .backup-section {
+        padding: 16px 0;
+    }
+    
+    .backup-section-title {
+        font-size: 1.1rem;
+    }
+    
+    .backup-section-description {
+        font-size: 0.9rem;
+    }
+    
+    .backup-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 20px;
+        font-size: 0.95rem;
+    }
+    
+    .restore-upload-container {
+        width: 100%;
+    }
+    
+    .restore-file-input {
+        width: 100%;
+        padding: 12px;
+    }
+    
+    .restore-status {
+        font-size: 0.9rem;
+        padding: 10px 12px;
+    }
+}

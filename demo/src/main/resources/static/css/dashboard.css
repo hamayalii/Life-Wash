@@ -1,0 +1,623 @@
+
+/* Intelligently apply custom font while excluding Icon Fonts */
+body, html, input, button, select, textarea, label, div, span, p, h1, h2, h3, h4, h5, h6, table, th, td, a, li {
+    font-family: 'Arkan Favorit', sans-serif !important;
+}
+
+/* Explicitly protect and restore Font Awesome & Icon Classes */
+i, 
+.fa, .fas, .far, .fal, .fab, .fad, .fa-solid, .fa-regular, .fa-brands, 
+[class^="fa-"], [class*=" fa-"], 
+[class^="icon-"], [class*=" icon-"] {
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome", sans-serif !important;
+}
+
+/* Ensure Icon pseudo-elements retain their native icon font */
+.fa::before, .fas::before, .far::before, .fab::before,
+[class^="fa-"]::before, [class*=" fa-"]::before {
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome" !important;
+}
+
+/* Custom overrides only — Tailwind (via CDN) handles the bulk of styling. */
+
+/* Admin dropdown positioning */
+.admin-dropdown {
+    position: fixed;
+    top: auto;
+    right: auto;
+    background: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border-radius: 0.5rem;
+    min-width: 160px;
+    overflow: hidden;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-dropdown.hidden {
+    display: none !important;
+}
+
+.admin-dropdown a, .admin-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1.25rem;
+    text-align: right;
+    color: #0f2440;
+    background: none;
+    border: none;
+    font-family: 'Arkan Favorit', sans-serif !important;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: background 0.2s ease;
+}
+
+.admin-dropdown a:hover, .admin-dropdown button:hover {
+    background: #eaf6ff;
+}
+
+.logout-btn {
+    color: #c0392b !important;
+    border-top: 1px solid rgba(0,0,0,0.05) !important;
+}
+
+.admin-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.admin-menu.hidden {
+    display: none !important;
+}
+
+/* Admin toggle button styling */
+.admin-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid rgba(14, 44, 77, 0.15);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-family: 'Arkan Favorit', sans-serif !important;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #0f2440;
+    transition: all 0.2s ease;
+}
+
+.admin-toggle:hover {
+    background: #eaf6ff;
+    border-color: #2fa8c9;
+}
+
+.admin-toggle i {
+    font-size: 1rem;
+}
+
+/* Ensure canvases never overflow their responsive containers */
+canvas {
+  max-width: 100%;
+}
+
+/* Subtle skeleton shimmer used while async data is loading */
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 37%, #e2e8f0 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* Thin, unobtrusive scrollbar for the table on overflow */
+.overflow-x-auto::-webkit-scrollbar { height: 8px; }
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+}
+
+/* Glassmorphism styles for order list items */
+.glass-order-item {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  contain: layout style;
+}
+
+.glass-order-item:hover {
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Glassmorphism action buttons */
+.glass-btn {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #1e293b;
+  contain: layout style;
+}
+
+.glass-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobile GPU optimization: reduce backdrop-filter on mobile */
+@media (max-width: 768px) {
+  .glass-order-item {
+    backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  }
+  
+  .glass-btn {
+    backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .glass-btn:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.glass-btn:active {
+  transform: translateY(0);
+}
+
+.glass-btn-accept {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #166534;
+}
+
+.glass-btn-accept:hover {
+  background: rgba(34, 197, 94, 0.3);
+}
+
+.glass-btn-reject {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #991b1b;
+}
+
+.glass-btn-reject:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.glass-btn-price {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #1e40af;
+}
+
+.glass-btn-price:hover {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.glass-btn-revert {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #92400e;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  min-width: auto;
+}
+
+.glass-btn-revert:hover {
+  background: rgba(245, 158, 11, 0.3);
+}
+
+/* Conflict modal styling */
+.conflict-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Mobile GPU optimization for conflict modal */
+@media (max-width: 768px) {
+  .conflict-modal {
+    backdrop-filter: none;
+    background: rgba(0, 0, 0, 0.7);
+  }
+}
+
+.conflict-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.conflict-modal-content {
+  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border-radius: 1rem;
+  padding: 2rem;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.conflict-modal.active .conflict-modal-content {
+  transform: scale(1);
+}
+
+.conflict-modal-title {
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #dc2626;
+  margin-bottom: 1rem;
+}
+
+.conflict-modal-message {
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 1rem;
+  color: #475569;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.conflict-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.conflict-modal-close {
+  background: rgba(100, 116, 139, 0.2);
+  border: 1px solid rgba(100, 116, 139, 0.4);
+  color: #475569;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.conflict-modal-close:hover {
+  background: rgba(100, 116, 139, 0.3);
+}
+
+/* Notification System Styles */
+.notification-container {
+  position: relative;
+}
+
+.notification-btn {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.notification-badge {
+  background: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border-radius: 9999px;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: pulse 2s infinite;
+}
+
+.notification-badge.hidden {
+  display: none;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 0.5rem rgba(239, 68, 68, 0);
+  }
+}
+
+.notification-dropdown {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  min-width: 300px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  display: none;
+}
+
+.notification-dropdown.show {
+  display: block !important;
+}
+
+.notification-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.notification-item:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item.unread {
+  background: rgba(59, 130, 246, 0.05);
+  border-left: 3px solid #3b82f6;
+}
+
+.notification-item.read {
+  opacity: 0.7;
+}
+
+.notification-type {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.notification-content {
+  font-size: 0.875rem;
+  color: #334155;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  font-family: 'Arkan Favorit', sans-serif !important;
+}
+
+.notification-date {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+/* Red glow effect for unread notifications */
+.glow-red {
+  animation: glow-red 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow-red {
+  from {
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+  }
+  to {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.8);
+  }
+}
+
+/* Others Drill-Down Modal Styles */
+.others-dropdown-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  width: 350px;
+  max-width: 90vw;
+  display: none;
+}
+
+.others-dropdown-modal.show {
+  display: block !important;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  color: #374151;
+}
+
+/* Enhanced Mobile Responsiveness for Action Buttons */
+@media (max-width: 768px) {
+  .glass-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .keyM {
+    display: grid;
+  }
+  
+  .glass-btn-revert {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  /* Stack action buttons in order rows */
+  .glass-order-item td:last-child .flex {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .glass-order-item td:last-child .flex button {
+    width: 100%;
+  }
+}
+
+/* Customer Note Icon Styling */
+.order-note-icon {
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: color 0.2s ease;
+}
+
+.order-note-icon:hover {
+  color: #b02a37;
+}
+
+/* Customer Note Modal Styling */
+.customer-note-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100001;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.customer-note-modal.hidden {
+  display: none;
+}
+
+.customer-note-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.customer-note-modal-content {
+  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border-radius: 1rem;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.customer-note-modal.show .customer-note-modal-content {
+  transform: scale(1);
+}
+
+.customer-note-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.customer-note-modal-header h3 {
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.customer-note-modal-body {
+  margin-bottom: 1.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.customer-note-modal-body p {
+  font-family: 'Arkan Favorit', sans-serif !important;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #334155;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.customer-note-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile GPU optimization for customer note modal */
+@media (max-width: 768px) {
+  .customer-note-modal {
+    backdrop-filter: none;
+    background: rgba(0, 0, 0, 0.7);
+  }
+  
+  .customer-note-modal-content {
+    backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.98);
+  }
+}
