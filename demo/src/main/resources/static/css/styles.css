@@ -973,6 +973,10 @@ i.fa-solid {
         display: none !important;
     }
 
+    .mob {
+        color: var(--background);
+    }
+
     /* Reordered elements replace the need for separate spacing/alignment overrides here */
 }
 
@@ -1133,10 +1137,6 @@ i.fa-solid {
     box-sizing: border-box;
 }
 
-.mob {
-    color: var(--background);
-}
-
 .discount-badge {
     display: inline-flex;
     align-items: center;
@@ -1257,4 +1257,8 @@ i.fa-solid {
 
 #adminToggle {
     color: var(--foreground);
+}
+
+.mob {
+    color: var(--background);
 }
