@@ -977,6 +977,10 @@ i.fa-solid {
         color: var(--background);
     }
 
+    .nav {
+        justify-content: center;
+    }
+
     /* Reordered elements replace the need for separate spacing/alignment overrides here */
 }
 
