@@ -108,6 +108,19 @@ public class OrderManagementService {
         order.setCreatedBy(request.getCreatedBy());
         order.setIdempotencyKey(request.getIdempotencyKey());
         
+        // Map location fields if provided
+        order.setLatitude(request.getLatitude());
+        order.setLongitude(request.getLongitude());
+        order.setAccuracyMeters(request.getAccuracyMeters());
+        order.setLocationSource(request.getLocationSource());
+        order.setLocationCapturedAt(request.getLocationCapturedAt());
+        
+        // Strip control characters from formattedAddress for security
+        if (request.getFormattedAddress() != null) {
+            String sanitized = request.getFormattedAddress().replaceAll("[\\p{Cntrl}]", "");
+            order.setFormattedAddress(sanitized);
+        }
+        
         // Zero Trust: Backend enforces state based on order source
         if (isWebOrder) {
             // Web orders require admin review - force PENDING state

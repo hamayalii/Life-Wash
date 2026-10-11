@@ -345,7 +345,13 @@ public class AdminDashboardController {
                     price != null ? price : BigDecimal.ZERO,
                     order.getWorkStatus() != null ? order.getWorkStatus().name() : "PENDING",
                     order.getAddress() != null ? order.getAddress() : "",
-                    order.getMessage() != null ? order.getMessage() : "");
+                    order.getMessage() != null ? order.getMessage() : "",
+                    order.getLatitude(),
+                    order.getLongitude(),
+                    order.getAccuracyMeters(),
+                    order.getLocationSource(),
+                    order.getLocationCapturedAt() != null ? order.getLocationCapturedAt().toString() : null,
+                    order.getFormattedAddress());
         });
     }
 

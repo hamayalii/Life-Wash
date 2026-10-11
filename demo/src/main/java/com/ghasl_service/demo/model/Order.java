@@ -14,6 +14,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,6 +108,44 @@ public class Order {
      * Never trust frontend calculations for financial data.
      */
     private BigDecimal grandTotal;
+
+    /**
+     * GPS latitude in decimal degrees (-90 to 90).
+     * Stored with NUMERIC(10,6) for ~11cm precision.
+     */
+    @Column(name = "latitude", precision = 10, scale = 6)
+    private BigDecimal latitude;
+
+    /**
+     * GPS longitude in decimal degrees (-180 to 180).
+     * Stored with NUMERIC(10,6) for ~11cm precision.
+     */
+    @Column(name = "longitude", precision = 10, scale = 6)
+    private BigDecimal longitude;
+
+    /**
+     * GPS accuracy in meters (0 to 10000).
+     */
+    @Column(name = "accuracy_meters")
+    private Double accuracyMeters;
+
+    /**
+     * Source of location data: gps or manual.
+     */
+    @Column(name = "location_source")
+    private String locationSource;
+
+    /**
+     * Timestamp when location was captured (timezone-aware).
+     */
+    @Column(name = "location_captured_at")
+    private Instant locationCapturedAt;
+
+    /**
+     * Reverse-geocoded address from Nominatim (informational only, not used in exports).
+     */
+    @Column(name = "formatted_address")
+    private String formattedAddress;
 
     /**
      * List of line items in this order. Supports multi-item POS orders.
@@ -241,4 +280,24 @@ public class Order {
         items.remove(item);
         item.setOrder(null);
     }
+
+    // ── Location field getters and setters ─────────────────────────────────────
+
+    public BigDecimal getLatitude() { return latitude; }
+    public void setLatitude(BigDecimal latitude) { this.latitude = latitude; }
+
+    public BigDecimal getLongitude() { return longitude; }
+    public void setLongitude(BigDecimal longitude) { this.longitude = longitude; }
+
+    public Double getAccuracyMeters() { return accuracyMeters; }
+    public void setAccuracyMeters(Double accuracyMeters) { this.accuracyMeters = accuracyMeters; }
+
+    public String getLocationSource() { return locationSource; }
+    public void setLocationSource(String locationSource) { this.locationSource = locationSource; }
+
+    public Instant getLocationCapturedAt() { return locationCapturedAt; }
+    public void setLocationCapturedAt(Instant locationCapturedAt) { this.locationCapturedAt = locationCapturedAt; }
+
+    public String getFormattedAddress() { return formattedAddress; }
+    public void setFormattedAddress(String formattedAddress) { this.formattedAddress = formattedAddress; }
 }

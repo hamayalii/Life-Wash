@@ -4,13 +4,19 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.Pattern;
+import com.ghasl_service.demo.validation.ValidLocationFields;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 /**
  * DTO for creating POS orders.
  * Contains customer information, operator tracking, and list of order items.
  */
+@ValidLocationFields
 public class OrderRequestDTO {
 
     @NotBlank(message = "customerName is required")
@@ -53,6 +59,50 @@ public class OrderRequestDTO {
     @Valid
     private List<OrderItemDTO> items;
 
+    /**
+     * GPS latitude in decimal degrees (-90 to 90).
+     * Optional field.
+     */
+    @DecimalMin(value = "-90", message = "latitude must be >= -90")
+    @DecimalMax(value = "90", message = "latitude must be <= 90")
+    private BigDecimal latitude;
+
+    /**
+     * GPS longitude in decimal degrees (-180 to 180).
+     * Optional field.
+     */
+    @DecimalMin(value = "-180", message = "longitude must be >= -180")
+    @DecimalMax(value = "180", message = "longitude must be <= 180")
+    private BigDecimal longitude;
+
+    /**
+     * GPS accuracy in meters (0 to 10000).
+     * Optional field.
+     */
+    @DecimalMin(value = "0", message = "accuracy must be >= 0")
+    @DecimalMax(value = "10000", message = "accuracy must be <= 10000")
+    private Double accuracyMeters;
+
+    /**
+     * Source of location data: gps or manual.
+     * Optional field.
+     */
+    @Pattern(regexp = "gps|manual", message = "locationSource must be 'gps' or 'manual'")
+    private String locationSource;
+
+    /**
+     * Timestamp when location was captured (timezone-aware).
+     * Optional field.
+     */
+    private Instant locationCapturedAt;
+
+    /**
+     * Reverse-geocoded address from Nominatim (informational only, not used in exports).
+     * Optional field, max 500 chars.
+     */
+    @Size(max = 500, message = "formattedAddress must not exceed 500 characters")
+    private String formattedAddress;
+
     public OrderRequestDTO() {
     }
 
@@ -65,6 +115,25 @@ public class OrderRequestDTO {
         this.createdBy = createdBy;
         this.idempotencyKey = idempotencyKey;
         this.items = items;
+    }
+
+    public OrderRequestDTO(String customerName, String phoneNumber, String address, 
+                          String notes, String createdBy, String idempotencyKey, List<OrderItemDTO> items,
+                          BigDecimal latitude, BigDecimal longitude, Double accuracyMeters,
+                          String locationSource, Instant locationCapturedAt, String formattedAddress) {
+        this.customerName = customerName;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.notes = notes;
+        this.createdBy = createdBy;
+        this.idempotencyKey = idempotencyKey;
+        this.items = items;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.accuracyMeters = accuracyMeters;
+        this.locationSource = locationSource;
+        this.locationCapturedAt = locationCapturedAt;
+        this.formattedAddress = formattedAddress;
     }
 
     // Getters and Setters
@@ -123,5 +192,53 @@ public class OrderRequestDTO {
 
     public void setItems(List<OrderItemDTO> items) {
         this.items = items;
+    }
+
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(BigDecimal longitude) {
+        this.longitude = longitude;
+    }
+
+    public Double getAccuracyMeters() {
+        return accuracyMeters;
+    }
+
+    public void setAccuracyMeters(Double accuracyMeters) {
+        this.accuracyMeters = accuracyMeters;
+    }
+
+    public String getLocationSource() {
+        return locationSource;
+    }
+
+    public void setLocationSource(String locationSource) {
+        this.locationSource = locationSource;
+    }
+
+    public Instant getLocationCapturedAt() {
+        return locationCapturedAt;
+    }
+
+    public void setLocationCapturedAt(Instant locationCapturedAt) {
+        this.locationCapturedAt = locationCapturedAt;
+    }
+
+    public String getFormattedAddress() {
+        return formattedAddress;
+    }
+
+    public void setFormattedAddress(String formattedAddress) {
+        this.formattedAddress = formattedAddress;
     }
 }

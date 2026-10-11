@@ -15,5 +15,11 @@ public record RequestResponse(
     BigDecimal price,
     String workStatus,
     String address,
-    String message
+    String message,
+    BigDecimal latitude,
+    BigDecimal longitude,
+    Double accuracyMeters,
+    String locationSource,
+    String locationCapturedAt,
+    String formattedAddress
 ) {}
