@@ -268,6 +268,78 @@
   line-height: 1.4;
 }
 
+/* Autofill status message under address input */
+.ol-autofill-status {
+  font-size: 0.8rem;
+  color: var(--accent, #3b82f6);
+  margin-top: 4px;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ol-autofill-status.hidden {
+  display: none;
+}
+
+/* Address suggestion chip wrapper */
+.ol-suggest-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.ol-suggest-wrapper.hidden {
+  display: none;
+}
+
+.ol-suggest-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 0.825rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ol-suggest-btn:hover {
+  background-color: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.ol-dismiss-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ol-dismiss-btn:hover {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   .ol-loc-btn,

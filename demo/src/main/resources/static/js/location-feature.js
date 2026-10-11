@@ -24,7 +24,10 @@
     error_map_load: "نەخشەکە بار نەبوو. تکایە دووبارە هەوڵبدە یان ناونیشانەکە بنووسە.",
     warning_in_app_browser: "هەندێک وێبگەڕی ناوەخۆیی شوێنکەوتن دەگرن. تکایە وێبگەڕەکە بەکاربێنە.",
     warning_outside_bounds: "شوێنەکە دەرەوەی هەرێمی کوردستانە. دڵنیایت؟",
-    saved: "شوێن دیاری کرا."
+    saved: "شوێن دیاری کرا.",
+    addrAutofilled: "ناونیشان لە نەخشەکەوە وەرگیرا، ئەتوانیت بیگۆڕیت.",
+    useSuggested: "بەکاربهێنانی ناونیشانی پێشنیارکراو",
+    dismiss: "نەخێر"
   };
 
   // Default coordinate center (Sulaymaniyah / Erbil region)
@@ -44,8 +47,16 @@
     longitude: null,
     accuracyMeters: null,
     locationSource: null, // "gps" | "manual"
-    locationCapturedAt: null
+    locationCapturedAt: null,
+    formattedAddress: null
   };
+
+  let addressTouchedByUser = false;
+  let addressAutoFilled = false;
+  let geocodeDebounceTimer = null;
+  let geocodeAbortController = null;
+  let rateLimitUntil = 0;
+  let currentRequestId = 0;
 
   // DOM Elements
   const locBtn = document.getElementById("locBtn");
@@ -56,6 +67,13 @@
   const myLocBtn = document.getElementById("myLocBtn");
   const closeMapBtn = document.getElementById("closeMapBtn");
   const locStatus = document.getElementById("locStatus");
+
+  const addressInput = document.getElementById("address");
+  const addrAutofillStatus = document.getElementById("addrAutofillStatus");
+  const addrSuggestWrapper = document.getElementById("addrSuggestWrapper");
+  const addrSuggestBtn = document.getElementById("addrSuggestBtn");
+  const addrSuggestText = document.getElementById("addrSuggestText");
+  const addrDismissBtn = document.getElementById("addrDismissBtn");
 
   // Map & Leaflet state
   let mapInstance = null;
@@ -297,6 +315,135 @@
     }
 
     setStatus(statusText, statusType);
+
+    // Trigger reverse geocoding with debounce and abort handling (Phase B2)
+    triggerReverseGeocode(state.latitude, state.longitude);
+  }
+
+  /**
+   * Reverse geocoding UI helpers and fetch logic
+   */
+  function showSuggestChip(suggestion) {
+    const wrapper = document.getElementById("addrSuggestWrapper");
+    const btn = document.getElementById("addrSuggestBtn");
+    const textEl = document.getElementById("addrSuggestText");
+    const dismiss = document.getElementById("addrDismissBtn");
+    if (!wrapper || !btn) return;
+
+    if (textEl) {
+      textEl.textContent = suggestion;
+    } else {
+      btn.textContent = suggestion;
+    }
+    btn.setAttribute("title", STR.useSuggested);
+    btn.setAttribute("aria-label", STR.useSuggested + ": " + suggestion);
+    if (dismiss) {
+      dismiss.setAttribute("title", STR.dismiss);
+      dismiss.setAttribute("aria-label", STR.dismiss);
+    }
+    wrapper.classList.remove("hidden");
+  }
+
+  function hideSuggestChip() {
+    const wrapper = document.getElementById("addrSuggestWrapper");
+    if (wrapper) {
+      wrapper.classList.add("hidden");
+    }
+  }
+
+  function showAutofillStatus() {
+    const statusEl = document.getElementById("addrAutofillStatus");
+    if (statusEl) {
+      statusEl.textContent = STR.addrAutofilled;
+      statusEl.classList.remove("hidden");
+    }
+  }
+
+  function hideAutofillStatus() {
+    const statusEl = document.getElementById("addrAutofillStatus");
+    if (statusEl) {
+      statusEl.classList.add("hidden");
+      statusEl.textContent = "";
+    }
+  }
+
+  function handleGeocodeSuggestion(suggestion) {
+    const addrInput = document.getElementById("address");
+    if (!addrInput) return;
+
+    if (!addressTouchedByUser && !addrInput.value.trim()) {
+      // Input empty AND not touched -> fill #address automatically
+      addrInput.value = suggestion;
+      addressAutoFilled = true;
+      showAutofillStatus();
+      hideSuggestChip();
+    } else if (addressAutoFilled && !addressTouchedByUser) {
+      // While addressAutoFilled is true and user has not typed, replace
+      addrInput.value = suggestion;
+      showAutofillStatus();
+      hideSuggestChip();
+    } else if (addressTouchedByUser) {
+      // Once user typed in #address, never overwrite; show chip button
+      hideAutofillStatus();
+      showSuggestChip(suggestion);
+    }
+  }
+
+  function triggerReverseGeocode(lat, lng) {
+    if (geocodeDebounceTimer) {
+      clearTimeout(geocodeDebounceTimer);
+      geocodeDebounceTimer = null;
+    }
+    if (geocodeAbortController) {
+      geocodeAbortController.abort();
+      geocodeAbortController = null;
+    }
+
+    const thisRequestId = ++currentRequestId;
+
+    geocodeDebounceTimer = setTimeout(function () {
+      if (Date.now() < rateLimitUntil) {
+        return; // In 429 Retry-After cooldown
+      }
+
+      if (typeof fetch !== "function") return;
+
+      const controller = typeof AbortController === "function" ? new AbortController() : null;
+      geocodeAbortController = controller;
+
+      fetch("/api/v1/geocode/reverse?lat=" + encodeURIComponent(lat) + "&lng=" + encodeURIComponent(lng), {
+        signal: controller ? controller.signal : undefined
+      })
+        .then(function (res) {
+          if (res.status === 429) {
+            const retryHeader = res.headers && typeof res.headers.get === "function" ? res.headers.get("Retry-After") : null;
+            const retrySec = retryHeader ? parseInt(retryHeader, 10) : 5;
+            rateLimitUntil = Date.now() + (Number.isFinite(retrySec) ? retrySec * 1000 : 5000);
+            return null;
+          }
+          if (!res.ok) {
+            return null;
+          }
+          return res.json();
+        })
+        .then(function (data) {
+          if (thisRequestId !== currentRequestId) {
+            return; // Stale response ignored
+          }
+          if (!data || !data.address || typeof data.address !== "string") {
+            return; // address: null or empty
+          }
+          const rawSuggestion = data.address.trim();
+          if (!rawSuggestion) return;
+          const suggestion = rawSuggestion.slice(0, 200);
+
+          state.formattedAddress = suggestion;
+          handleGeocodeSuggestion(suggestion);
+        })
+        .catch(function () {
+          // Abort or error: show nothing, let user type
+        });
+    }, 600);
   }
 
   /**
@@ -433,6 +580,33 @@
     }
   });
 
+  // Address input touch tracking
+  if (addressInput) {
+    addressInput.addEventListener("input", function () {
+      addressTouchedByUser = true;
+      hideAutofillStatus();
+    });
+  }
+
+  // Address suggestion chip actions
+  if (addrSuggestBtn) {
+    addrSuggestBtn.addEventListener("click", function () {
+      const addrInput = document.getElementById("address");
+      if (state.formattedAddress && addrInput) {
+        addrInput.value = state.formattedAddress;
+        addressTouchedByUser = true;
+      }
+      hideSuggestChip();
+      hideAutofillStatus();
+    });
+  }
+
+  if (addrDismissBtn) {
+    addrDismissBtn.addEventListener("click", function () {
+      hideSuggestChip();
+    });
+  }
+
   /**
    * Public API exposed on window.OrderLocation
    */
@@ -453,6 +627,10 @@
         payload.accuracyMeters = Number(state.accuracyMeters);
       }
 
+      if (state.formattedAddress) {
+        payload.formattedAddress = state.formattedAddress;
+      }
+
       return payload;
     },
 
@@ -462,6 +640,23 @@
       state.accuracyMeters = null;
       state.locationSource = null;
       state.locationCapturedAt = null;
+      state.formattedAddress = null;
+
+      addressTouchedByUser = false;
+      addressAutoFilled = false;
+      currentRequestId++;
+
+      if (geocodeDebounceTimer) {
+        clearTimeout(geocodeDebounceTimer);
+        geocodeDebounceTimer = null;
+      }
+      if (geocodeAbortController) {
+        geocodeAbortController.abort();
+        geocodeAbortController = null;
+      }
+
+      hideSuggestChip();
+      hideAutofillStatus();
 
       if (markerInstance && mapInstance) {
         mapInstance.removeLayer(markerInstance);

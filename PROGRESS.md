@@ -8,3 +8,5 @@ item 4: DONE, mvnw clean test executed, Phase A verified and completed
 
 Decision: Option B adopted - Leaflet 1.9.4 self-hosted under /assets/vendor/leaflet-1.9.4/ to comply with SecurityConfig and WebConfig caching rules without backend modification.
 B1 item 1-10: DONE, index.html, location-feature.js, location-feature.css, script.js, OrderLocationHttpTest.java, PROGRESS.md
+B2 item 1-6: DONE, location-feature.js, location-feature.css, index.html
+C item 7-11: DONE, dashboard.html, dashboard.js

@@ -244,9 +244,116 @@ function renderStats(stats) {
     .join("");
 }
 
+/* ==========================================================================
+ * LEAFLET LAZY LOADER & LOCATION HELPERS (Phase C)
+ * ======================================================================== */
+
+const activeOrderMaps = new Map();
+let leafletDashboardPromise = null;
+
+function loadLeafletForDashboard() {
+  if (window.L) {
+    return Promise.resolve(window.L);
+  }
+  if (leafletDashboardPromise) {
+    return leafletDashboardPromise;
+  }
+  leafletDashboardPromise = new Promise(function (resolve, reject) {
+    const script = document.createElement("script");
+    script.src = "/assets/vendor/leaflet-1.9.4/leaflet.js";
+    script.async = true;
+
+    let timer = setTimeout(function () {
+      cleanup();
+      reject(new Error("Leaflet dashboard load timeout"));
+    }, 8000);
+
+    function cleanup() {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      script.onload = null;
+      script.onerror = null;
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+      leafletDashboardPromise = null;
+    }
+
+    script.onload = function () {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      if (window.L) {
+        window.L.Icon.Default.imagePath = "/assets/vendor/leaflet-1.9.4/images/";
+        resolve(window.L);
+      } else {
+        cleanup();
+        reject(new Error("Leaflet L not found"));
+      }
+    };
+
+    script.onerror = function () {
+      cleanup();
+      reject(new Error("Failed to load Leaflet script for dashboard"));
+    };
+
+    document.head.appendChild(script);
+  });
+  return leafletDashboardPromise;
+}
+
+function isValidCoordinates(lat, lng) {
+  if (lat == null || lng == null) return false;
+  const nLat = Number(lat);
+  const nLng = Number(lng);
+  return Number.isFinite(nLat) && nLat >= -90 && nLat <= 90 &&
+         Number.isFinite(nLng) && nLng >= -180 && nLng <= 180;
+}
+
+function copyTextToClipboard(text, callback) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () {
+      callback(true);
+    }).catch(function () {
+      fallbackCopy(text, callback);
+    });
+  } else {
+    fallbackCopy(text, callback);
+  }
+}
+
+function fallbackCopy(text, callback) {
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    ta.style.top = "-9999px";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const success = document.execCommand("copy");
+    document.body.removeChild(ta);
+    callback(success);
+  } catch (e) {
+    callback(false);
+  }
+}
+
 function renderOrders(orders) {
   const body = document.getElementById("orders-body");
   if (!body) return;
+
+  // Clean up existing open Leaflet maps to avoid memory/listener leaks
+  activeOrderMaps.forEach(function (map) {
+    try {
+      map.remove();
+    } catch (e) {}
+  });
+  activeOrderMaps.clear();
 
   // Clear existing content
   body.innerHTML = "";
@@ -275,7 +382,217 @@ function renderOrders(orders) {
     // Address cell
     const addressCell = document.createElement("td");
     addressCell.className = "py-4 pr-4 text-sm text-slate-500";
-    addressCell.textContent = o.address && o.address.trim() ? o.address : "-";
+    
+    const addressSpan = document.createElement("span");
+    addressSpan.textContent = o.address && o.address.trim() ? o.address : "-";
+    addressCell.appendChild(addressSpan);
+
+    const hasCoords = isValidCoordinates(o.latitude, o.longitude);
+    let detailsTr = null;
+
+    if (hasCoords) {
+      const mapToggleBtn = document.createElement("button");
+      mapToggleBtn.type = "button";
+      mapToggleBtn.className = "order-loc-toggle-btn inline-flex items-center gap-1 px-2 py-0.5 mr-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition-colors";
+      mapToggleBtn.title = "نەخشە";
+      mapToggleBtn.setAttribute("aria-label", "نەخشە");
+
+      const pinIcon = document.createElement("i");
+      pinIcon.className = "fa-solid fa-map-pin text-blue-500";
+      pinIcon.setAttribute("aria-hidden", "true");
+      mapToggleBtn.appendChild(pinIcon);
+
+      const btnText = document.createElement("span");
+      btnText.textContent = "نەخشە";
+      mapToggleBtn.appendChild(btnText);
+
+      addressCell.appendChild(mapToggleBtn);
+
+      // Create expandable location details row
+      detailsTr = document.createElement("tr");
+      detailsTr.className = "order-loc-details-row hidden bg-slate-50/90 border-b border-slate-200";
+
+      const detailsTd = document.createElement("td");
+      detailsTd.colSpan = 7;
+      detailsTd.className = "p-4";
+      detailsTr.appendChild(detailsTd);
+
+      const panel = document.createElement("div");
+      panel.className = "flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg border border-slate-200 shadow-sm";
+
+      // Mini map container
+      const mapContainer = document.createElement("div");
+      mapContainer.className = "order-mini-map rounded-lg overflow-hidden border border-slate-200 w-full md:w-1/2";
+      mapContainer.style.height = "200px";
+      mapContainer.style.position = "relative";
+      mapContainer.style.zIndex = "1";
+
+      // Info container
+      const infoContainer = document.createElement("div");
+      infoContainer.className = "flex flex-col justify-between gap-3 w-full md:w-1/2 text-sm text-slate-700";
+
+      const infoList = document.createElement("div");
+      infoList.className = "space-y-2";
+
+      const latNum = Number(o.latitude);
+      const lngNum = Number(o.longitude);
+      const coordsString = latNum.toFixed(6) + ", " + lngNum.toFixed(6);
+
+      // Coordinates row
+      const coordsRow = document.createElement("div");
+      coordsRow.className = "flex items-center gap-2";
+      const coordsLabel = document.createElement("span");
+      coordsLabel.className = "text-slate-500 font-medium";
+      coordsLabel.textContent = "پۆتانەکان:";
+      const coordsVal = document.createElement("span");
+      coordsVal.className = "font-mono text-slate-800";
+      coordsVal.dir = "ltr";
+      coordsVal.textContent = coordsString;
+      coordsRow.appendChild(coordsLabel);
+      coordsRow.appendChild(coordsVal);
+      infoList.appendChild(coordsRow);
+
+      // Address row
+      if (o.address && o.address.trim()) {
+        const addrRow = document.createElement("div");
+        addrRow.className = "flex items-start gap-2";
+        const addrLabel = document.createElement("span");
+        addrLabel.className = "text-slate-500 font-medium shrink-0";
+        addrLabel.textContent = "ناونیشان:";
+        const addrVal = document.createElement("span");
+        addrVal.className = "text-slate-800";
+        addrVal.textContent = o.address;
+        addrRow.appendChild(addrLabel);
+        addrRow.appendChild(addrVal);
+        infoList.appendChild(addrRow);
+      }
+
+      // Formatted Address (if present)
+      if (o.formattedAddress && o.formattedAddress.trim()) {
+        const fAddrRow = document.createElement("div");
+        fAddrRow.className = "flex items-start gap-2 text-xs bg-slate-50 p-2 rounded border border-slate-100";
+        const fAddrLabel = document.createElement("span");
+        fAddrLabel.className = "text-slate-500 font-medium shrink-0";
+        fAddrLabel.textContent = "ناونیشانی فەرمی (پێشنیارکراو):";
+        const fAddrVal = document.createElement("span");
+        fAddrVal.className = "text-slate-700";
+        fAddrVal.textContent = o.formattedAddress;
+        fAddrRow.appendChild(fAddrLabel);
+        fAddrRow.appendChild(fAddrVal);
+        infoList.appendChild(fAddrRow);
+      }
+
+      // Location Source & Accuracy
+      const metaRow = document.createElement("div");
+      metaRow.className = "flex items-center gap-4 text-xs text-slate-500";
+
+      const isGps = o.locationSource === "gps";
+      const srcSpan = document.createElement("span");
+      srcSpan.textContent = "سەرچاوە: " + (isGps ? "GPS" : "دەستی");
+      metaRow.appendChild(srcSpan);
+
+      if (isGps && o.accuracyMeters != null) {
+        const accSpan = document.createElement("span");
+        accSpan.textContent = "وردی: ±" + Math.round(o.accuracyMeters) + " مەتر";
+        metaRow.appendChild(accSpan);
+      }
+      infoList.appendChild(metaRow);
+
+      infoContainer.appendChild(infoList);
+
+      // Actions row
+      const actionsRow = document.createElement("div");
+      actionsRow.className = "flex items-center gap-3 pt-2 border-t border-slate-100";
+
+      // Google Maps link
+      const gmapsLink = document.createElement("a");
+      gmapsLink.href = "https://www.google.com/maps?q=" + encodeURIComponent(latNum.toFixed(6) + "," + lngNum.toFixed(6));
+      gmapsLink.target = "_blank";
+      gmapsLink.rel = "noopener noreferrer";
+      gmapsLink.className = "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded border border-emerald-200 transition-colors";
+      const gmapsIcon = document.createElement("i");
+      gmapsIcon.className = "fa-solid fa-arrow-up-right-from-square";
+      gmapsLink.appendChild(gmapsIcon);
+      const gmapsText = document.createElement("span");
+      gmapsText.textContent = "کردنەوە لە گووگڵ مپس";
+      gmapsLink.appendChild(gmapsText);
+      actionsRow.appendChild(gmapsLink);
+
+      // Copy coordinates button
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded border border-slate-200 transition-colors";
+      const copyIcon = document.createElement("i");
+      copyIcon.className = "fa-regular fa-copy";
+      copyBtn.appendChild(copyIcon);
+      const copyText = document.createElement("span");
+      copyText.textContent = "کۆپی کردنی شوێن";
+      copyBtn.appendChild(copyText);
+
+      copyBtn.addEventListener("click", function () {
+        copyTextToClipboard(coordsString, function (ok) {
+          if (ok) {
+            copyText.textContent = "کۆپی کرا!";
+            copyIcon.className = "fa-solid fa-check text-emerald-600";
+            setTimeout(function () {
+              copyText.textContent = "کۆپی کردنی شوێن";
+              copyIcon.className = "fa-regular fa-copy";
+            }, 2000);
+          }
+        });
+      });
+      actionsRow.appendChild(copyBtn);
+
+      infoContainer.appendChild(actionsRow);
+
+      panel.appendChild(mapContainer);
+      panel.appendChild(infoContainer);
+      detailsTd.appendChild(panel);
+
+      // Toggle listener
+      mapToggleBtn.addEventListener("click", function () {
+        const isHidden = detailsTr.classList.contains("hidden");
+        if (isHidden) {
+          detailsTr.classList.remove("hidden");
+          mapToggleBtn.classList.add("bg-blue-200");
+
+          loadLeafletForDashboard().then(function (L) {
+            if (detailsTr.classList.contains("hidden")) return;
+            if (activeOrderMaps.has(o.orderId)) {
+              const oldM = activeOrderMaps.get(o.orderId);
+              try { oldM.remove(); } catch (e) {}
+            }
+            const map = L.map(mapContainer, {
+              center: [latNum, lngNum],
+              zoom: 16,
+              scrollWheelZoom: false
+            });
+            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+              maxZoom: 19,
+              attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+            L.marker([latNum, lngNum], {
+              draggable: false
+            }).addTo(map);
+
+            activeOrderMaps.set(o.orderId, map);
+            setTimeout(function () {
+              map.invalidateSize();
+            }, 100);
+          }).catch(function (err) {
+            console.error("Leaflet dashboard load failed:", err);
+          });
+        } else {
+          detailsTr.classList.add("hidden");
+          mapToggleBtn.classList.remove("bg-blue-200");
+          if (activeOrderMaps.has(o.orderId)) {
+            const m = activeOrderMaps.get(o.orderId);
+            try { m.remove(); } catch (e) {}
+            activeOrderMaps.delete(o.orderId);
+          }
+        }
+      });
+    }
 
     // Request date cell
     const requestedAtCell = document.createElement("td");
@@ -369,6 +686,9 @@ function renderOrders(orders) {
     tr.appendChild(statusCell);
 
     body.appendChild(tr);
+    if (detailsTr) {
+      body.appendChild(detailsTr);
+    }
   });
 }
 
@@ -581,8 +901,8 @@ function openOthersModal() {
     modalBody.innerHTML = othersServicesData
       .map(item => `
         <div class="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
-          <span class="text-slate-700">${item.label}</span>
-          <span class="font-medium text-slate-900">${item.count}</span>
+          <span class="text-slate-700">${esc(item.label)}</span>
+          <span class="font-medium text-slate-900">${esc(item.count)}</span>
         </div>
       `)
       .join("");
