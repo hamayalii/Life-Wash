@@ -18,3 +18,4 @@ FINAL item 5: DONE, docs/LOCATION_MANUAL_TESTS.md created (all UNCHECKED)
 FINAL item 6: DONE, Kurdish strings listed in final report
 FINAL item 7: DONE, mvnw clean test: Tests run: 87, Failures: 0, Errors: 16 (all pre-existing baseline), node --check: ALL JS OK
 FINAL item 8: DONE, committed "Final: CSP report-only (off by default), docs, manual test checklist"
+FINAL FIXES: DONE, SecurityConfig permitAll for GET /api/v1/geocode/reverse, GeocodeSecurityTest (2 tests pass), dashboard.js label updated, docs/LOCATION_FEATURE.md corrected

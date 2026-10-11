@@ -1,4 +1,4 @@
-﻿# Location Feature — Developer Reference
+# Location Feature — Developer Reference
 
 ## What it does
 An **optional** GPS / interactive-map location picker on the public order form (`index.html`).
@@ -17,7 +17,7 @@ suggestion, GPS/manual label, accuracy, Google Maps link, and a coordinates copy
 | `dto/OrderRequestDTO.java` | Corresponding optional request fields + `@ValidLocationFields` |
 | `validation/LocationFieldsValidator.java` + `ValidLocationFields.java` | Both-or-neither lat/lng validation |
 | `controller/GeocodeController.java` | `GET /api/v1/geocode/reverse` proxy to Nominatim |
-| `config/GeocodeConfig.java` | RestTemplate, Caffeine cache (500 entries / 10 min TTL), semaphore |
+| `config/GeocodeConfig.java` | RestTemplate, Caffeine cache (1000 entries / 24 hours TTL), semaphore |
 | `config/CspReportOnlyFilter.java` | **New** — CSP-Report-Only header, off by default |
 | `exception/GlobalExceptionHandler.java` | Validation error shaping for 400 responses |
 | `service/OrderManagementService.java` | Persists location fields on web orders |
@@ -41,7 +41,7 @@ All location fields are **optional**. Either both lat+lng are present or neither
 |-------|------|-------------|
 | `latitude` | BigDecimal | -90..90 |
 | `longitude` | BigDecimal | -180..180 |
-| `accuracyMeters` | Integer | 0..10000, only with GPS |
+| `accuracyMeters` | Double | 0..10000, only with GPS |
 | `locationSource` | String | `"gps"` or `"manual"` |
 | `locationCapturedAt` | ISO-8601 offset datetime | not >5 min future, not >24 h old |
 | `formattedAddress` | String | max 500 chars (informational, from geocode) |
@@ -55,7 +55,7 @@ On 400, the response is: `{ "status": 400, "error": "...", "errors": { "field": 
 | `lng` | yes | -180..180 |
 
 Responses: `200 { "address": "string or null" }` · `400` out-of-range · `429 Retry-After` rate limited  
-Requires authentication (admin session).
+Public endpoint (`permitAll`), rate-limited per-IP and globally.
 
 ---
 
@@ -79,7 +79,7 @@ directly — see the **open follow-up** below.
 - **OSM tiles** are fetched directly by the browser. OpenStreetMap sees the user's IP and
   the map area being viewed. See [OSM tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
 - **Nominatim reverse geocode** calls are proxied through the backend — the user's IP is
-  hidden from Nominatim. The geocode proxy applies a 1 req/s rate limit and a 500-entry cache.
+  hidden from Nominatim. The geocode proxy applies a 1 req/s rate limit and a 1000-entry cache (24 hours TTL).
 - **Coordinates are stored only on order submit**, never in localStorage/sessionStorage.
 
 ---
@@ -117,8 +117,6 @@ for **365 days**. To upgrade:
   marker via keyboard is limited to what Leaflet provides out-of-the-box.
 - **Scroll handling on touch**: Map scroll-wheel zoom and touch dragging are disabled until
   the user explicitly interacts with the map container to prevent page-scroll trapping.
-- **Reverse geocode only fires from admin session** — the geocode endpoint requires auth;
-  the location picker itself works offline (no geocode = user types address manually).
 
 ---
 

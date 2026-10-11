@@ -447,7 +447,7 @@ function renderOrders(orders) {
       coordsRow.className = "flex items-center gap-2";
       const coordsLabel = document.createElement("span");
       coordsLabel.className = "text-slate-500 font-medium";
-      coordsLabel.textContent = "پۆتانەکان:";
+      coordsLabel.textContent = "کۆئۆردینەیتەکان:";
       const coordsVal = document.createElement("span");
       coordsVal.className = "font-mono text-slate-800";
       coordsVal.dir = "ltr";

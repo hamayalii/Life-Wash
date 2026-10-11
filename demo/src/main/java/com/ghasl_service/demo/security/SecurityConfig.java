@@ -58,6 +58,9 @@ public class SecurityConfig {
                         
                         // Order submission endpoint (public - required for customer orders)
                         .requestMatchers("/api/v1/orders").permitAll()
+
+                        // Reverse geocoding endpoint (public - required for customer address suggestion)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/geocode/reverse").permitAll()
                         
                         // Static resources and public pages
                         .requestMatchers("/", "/index.html", "/settings.html").permitAll()
