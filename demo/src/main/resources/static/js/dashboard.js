@@ -213,11 +213,15 @@ function hslToHex(h, s, l) {
  * DOM RENDERING
  * ======================================================================== */
 
-/** Escape strings before injecting as HTML. */
+/** Escape strings before injecting as HTML or inside attributes (escapes & < > " '). */
 function esc(str) {
-  const div = document.createElement("div");
-  div.textContent = String(str);
-  return div.innerHTML;
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function renderStats(stats) {
