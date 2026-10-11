@@ -18,10 +18,10 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class GeocodeConfig {
 
-    @Value("${app.geocode.user-agent:GhaslService-LocationFeature/1.0}")
+    @Value("${app.geocode.user-agent:}")
     private String userAgent;
 
-    @Value("${app.geocode.referer:https://ghasl-service.example.com}")
+    @Value("${app.geocode.referer:}")
     private String referer;
 
     /**

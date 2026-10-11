@@ -28,13 +28,8 @@ public class LocationFieldsValidator implements ConstraintValidator<ValidLocatio
         java.math.BigDecimal lat = value.getLatitude();
         java.math.BigDecimal lng = value.getLongitude();
 
-        // Both null is valid (no location provided)
-        if (lat == null && lng == null) {
-            return true;
-        }
-
-        // One null, one provided is invalid
-        if (lat == null || lng == null) {
+        // Latitude and longitude must both be provided or both null
+        if ((lat == null && lng != null) || (lat != null && lng == null)) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate("latitude and longitude must both be provided or both null").addConstraintViolation();
             return false;

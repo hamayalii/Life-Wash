@@ -67,8 +67,8 @@ public class GeocodeController {
             @RequestParam BigDecimal lng,
             HttpServletRequest request) {
 
-        // Get client IP
-        String clientIp = getClientIp(request);
+        // Get client IP directly (no manual proxy header parsing)
+        String clientIp = request.getRemoteAddr();
 
         // Per-IP rate limiting
         Integer ipCount = geocodeRateLimitCache.getIfPresent(clientIp);
@@ -82,6 +82,36 @@ public class GeocodeController {
                     .body(Map.of("error", "Too many requests from this IP"));
         }
         geocodeRateLimitCache.put(clientIp, ipCount + 1);
+
+        // Validate coordinate bounds (Kurdistan region sanity check)
+        if (lat.compareTo(MIN_LAT) < 0 || lat.compareTo(MAX_LAT) > 0 ||
+            lng.compareTo(MIN_LNG) < 0 || lng.compareTo(MAX_LNG) > 0) {
+            log.warn("Coordinates outside service area: lat={}, lng={}", lat, lng);
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Coordinates outside service area"));
+        }
+
+        // If User-Agent or Referer is blank, do NOT call Nominatim: return 200 with {"address": null} and log one WARN
+        if (geocodeConfig.getUserAgent() == null || geocodeConfig.getUserAgent().isBlank() ||
+            geocodeConfig.getReferer() == null || geocodeConfig.getReferer().isBlank()) {
+            log.warn("Nominatim User-Agent or Referer is blank; skipping upstream geocoding");
+            Map<String, Object> emptyResponse = new java.util.HashMap<>();
+            emptyResponse.put("address", null);
+            return ResponseEntity.ok(emptyResponse);
+        }
+
+        // Round coordinates to 4 decimals for cache key
+        String cacheKey = lat.setScale(CACHE_KEY_PRECISION, RoundingMode.HALF_UP) + "," +
+                         lng.setScale(CACHE_KEY_PRECISION, RoundingMode.HALF_UP);
+
+        // Check cache
+        String cached = geocodeCache.getIfPresent(cacheKey);
+        if (cached != null) {
+            log.debug("Cache hit for coordinates: {}", cacheKey);
+            return ResponseEntity.ok()
+                    .cacheControl(CacheControl.maxAge(24, TimeUnit.HOURS))
+                    .body(Map.of("address", cached));
+        }
 
         // Global rate limiting (1 req/sec)
         try {
@@ -98,27 +128,6 @@ public class GeocodeController {
         }
 
         try {
-            // Validate coordinate bounds (Kurdistan region sanity check)
-            if (lat.compareTo(MIN_LAT) < 0 || lat.compareTo(MAX_LAT) > 0 ||
-                lng.compareTo(MIN_LNG) < 0 || lng.compareTo(MAX_LNG) > 0) {
-                log.warn("Coordinates outside service area: lat={}, lng={}", lat, lng);
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Coordinates outside service area"));
-            }
-
-            // Round coordinates to 4 decimals for cache key
-            String cacheKey = lat.setScale(CACHE_KEY_PRECISION, RoundingMode.HALF_UP) + "," +
-                             lng.setScale(CACHE_KEY_PRECISION, RoundingMode.HALF_UP);
-
-            // Check cache
-            String cached = geocodeCache.getIfPresent(cacheKey);
-            if (cached != null) {
-                log.debug("Cache hit for coordinates: {}", cacheKey);
-                return ResponseEntity.ok()
-                        .cacheControl(CacheControl.maxAge(24, TimeUnit.HOURS))
-                        .body(Map.of("address", cached));
-            }
-
             // Call Nominatim
             String url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lng + "&accept-language=ckb,ku,ar,en";
 
@@ -139,9 +148,9 @@ public class GeocodeController {
                     // Strip control characters
                     address = address.replaceAll("[\\p{Cntrl}]", "");
 
-                    // Cap length at 500 chars
-                    if (address.length() > 500) {
-                        address = address.substring(0, 500);
+                    // Cap length at 200 chars
+                    if (address.length() > 200) {
+                        address = address.substring(0, 200);
                     }
 
                     // Cache result
@@ -154,7 +163,9 @@ public class GeocodeController {
                 } else {
                     // Nominatim returned no address (e.g., ocean, no data)
                     log.warn("Nominatim returned no address for: {}", cacheKey);
-                    return ResponseEntity.ok(Map.of("address", (String) null));
+                    Map<String, Object> emptyBody = new java.util.HashMap<>();
+                    emptyBody.put("address", null);
+                    return ResponseEntity.ok(emptyBody);
                 }
             } catch (Exception e) {
                 // Nominatim error or network failure - degrade gracefully
@@ -166,28 +177,5 @@ public class GeocodeController {
         } finally {
             geocodeGlobalSemaphore.release();
         }
-    }
-
-    /**
-     * Extracts client IP address from request.
-     * Handles proxies and load balancers by checking X-Forwarded-For header.
-     */
-    private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        
-        // X-Forwarded-For may contain multiple IPs, take the first one
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        
-        return ip;
     }
 }

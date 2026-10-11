@@ -210,20 +210,30 @@ class OrderRequestDTOTest {
     }
 
     @Test
-    void testFormattedAddressTooLong() {
+    void testOutsideKurdistanCoordinatesAccepted() {
+        OrderRequestDTO dto = createValidDTO();
+        dto.setLatitude(new BigDecimal("10.0"));
+        dto.setLongitude(new BigDecimal("10.0"));
+
+        Set<ConstraintViolation<OrderRequestDTO>> violations = validator.validate(dto);
+        assertTrue(violations.isEmpty(), "Coordinates outside Kurdistan (lat 10, lng 10) must be accepted by OrderRequestDTO");
+    }
+
+    @Test
+    void testFormattedAddress501Fails() {
         OrderRequestDTO dto = createValidDTO();
         dto.setLatitude(new BigDecimal("35.5"));
         dto.setLongitude(new BigDecimal("44.5"));
-        String longAddress = "A".repeat(256); // Invalid (> 500 chars)
+        String longAddress = "A".repeat(501); // Invalid (> 500 chars)
         dto.setFormattedAddress(longAddress);
 
         Set<ConstraintViolation<OrderRequestDTO>> violations = validator.validate(dto);
-        assertFalse(violations.isEmpty(), "Address > 200 chars should fail validation");
+        assertFalse(violations.isEmpty(), "formattedAddress > 500 chars should fail validation");
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("formattedAddress must not exceed 500 characters")));
     }
 
     @Test
-    void testFormattedAddressValidLength() {
+    void testFormattedAddress500Passes() {
         OrderRequestDTO dto = createValidDTO();
         dto.setLatitude(new BigDecimal("35.5"));
         dto.setLongitude(new BigDecimal("44.5"));
@@ -231,7 +241,42 @@ class OrderRequestDTOTest {
         dto.setFormattedAddress(validAddress);
 
         Set<ConstraintViolation<OrderRequestDTO>> violations = validator.validate(dto);
-        assertTrue(violations.isEmpty(), "Address of 200 chars should pass validation");
+        assertTrue(violations.isEmpty(), "formattedAddress of 500 chars should pass validation");
+    }
+
+    @Test
+    void testAddress256Fails() {
+        OrderRequestDTO dto = createValidDTO();
+        String longAddress = "A".repeat(256); // Invalid (> 255 chars)
+        dto.setAddress(longAddress);
+
+        Set<ConstraintViolation<OrderRequestDTO>> violations = validator.validate(dto);
+        assertFalse(violations.isEmpty(), "address > 255 chars should fail validation");
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("address must not exceed 255 characters")));
+    }
+
+    @Test
+    void testAddress255Passes() {
+        OrderRequestDTO dto = createValidDTO();
+        String validAddress = "A".repeat(255); // Valid (255 chars)
+        dto.setAddress(validAddress);
+
+        Set<ConstraintViolation<OrderRequestDTO>> violations = validator.validate(dto);
+        assertTrue(violations.isEmpty(), "address of 255 chars should pass validation");
+    }
+
+    @Test
+    void testAllNullLocationPasses() {
+        OrderRequestDTO dto = createValidDTO();
+        dto.setLatitude(null);
+        dto.setLongitude(null);
+        dto.setAccuracyMeters(null);
+        dto.setLocationSource(null);
+        dto.setLocationCapturedAt(null);
+        dto.setFormattedAddress(null);
+
+        Set<ConstraintViolation<OrderRequestDTO>> violations = validator.validate(dto);
+        assertTrue(violations.isEmpty(), "All-null location fields should pass validation");
     }
 
     @Test
@@ -258,6 +303,17 @@ class OrderRequestDTOTest {
         Set<ConstraintViolation<OrderRequestDTO>> violations = validator.validate(dto);
         assertFalse(violations.isEmpty(), "LocationCapturedAt > 24 hours old should fail validation");
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("locationCapturedAt is too old")));
+    }
+
+    @Test
+    void testLocationCapturedAtNowPasses() {
+        OrderRequestDTO dto = createValidDTO();
+        dto.setLatitude(new BigDecimal("35.5"));
+        dto.setLongitude(new BigDecimal("44.5"));
+        dto.setLocationCapturedAt(Instant.now());
+
+        Set<ConstraintViolation<OrderRequestDTO>> violations = validator.validate(dto);
+        assertTrue(violations.isEmpty(), "LocationCapturedAt now should pass validation");
     }
 
     @Test

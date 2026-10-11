@@ -76,6 +76,37 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle MethodArgumentNotValidException - validation failures on @Valid request bodies.
+     * Returns HTTP 400 with validation error details.
+     */
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<Object> handleValidationExceptions(
+            org.springframework.web.bind.MethodArgumentNotValidException ex,
+            WebRequest request) {
+        logger.warn("Validation failed: {}", ex.getMessage());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage()));
+        ex.getBindingResult().getGlobalErrors().forEach(error ->
+                errors.put(error.getObjectName(), error.getDefaultMessage()));
+
+        body.put("message", "Validation failed");
+        body.put("errors", errors);
+        body.put("path", request.getDescription(false).replace("uri=", ""));
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body);
+    }
+
+    /**
      * Handle NoHandlerFoundException - 404 Not Found for missing endpoints.
      * Returns HTTP 404 without logging as ERROR to reduce noise.
      */
