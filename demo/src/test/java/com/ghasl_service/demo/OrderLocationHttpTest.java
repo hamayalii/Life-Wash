@@ -303,4 +303,33 @@ public class OrderLocationHttpTest {
         assertThat(reloadedOld.get().getLatitude()).isNull();
         assertThat(reloadedOld.get().getLongitude()).isNull();
     }
+
+    /**
+     * B1 Item 1: unauthenticated GET of /assets/vendor/leaflet-1.9.4/leaflet.js, leaflet.css,
+     * images/marker-icon.png returns 200 with correct content types.
+     */
+    @Test
+    void testUnauthenticatedLeafletStaticAssetsReturn200() throws Exception {
+        mockMvc.perform(get("/assets/vendor/leaflet-1.9.4/leaflet.js"))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    String contentType = result.getResponse().getContentType();
+                    assertThat(contentType).containsIgnoringCase("javascript");
+                });
+
+        mockMvc.perform(get("/assets/vendor/leaflet-1.9.4/leaflet.css"))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    String contentType = result.getResponse().getContentType();
+                    assertThat(contentType).containsIgnoringCase("css");
+                });
+
+        mockMvc.perform(get("/assets/vendor/leaflet-1.9.4/images/marker-icon.png"))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    String contentType = result.getResponse().getContentType();
+                    assertThat(contentType).containsIgnoringCase("image");
+                });
+    }
 }
+

@@ -160,6 +160,14 @@
       })
     };
 
+    // Integrate optional location payload if available (Phase B1)
+    if (window.OrderLocation && typeof window.OrderLocation.getPayload === "function") {
+      var locPayload = window.OrderLocation.getPayload();
+      if (locPayload && typeof locPayload === "object") {
+        Object.assign(payload, locPayload);
+      }
+    }
+
     var btn = form.querySelector('button[type="submit"]');
     btn.disabled    = true;
     btn.textContent = "ناردن...";
@@ -178,7 +186,22 @@
           return res.json().catch(function () { return {}; });
         } else if (res.status === 400) {
           return res.json().then(function (body) {
-            throw new Error(body.message || "زانیارییەکانت دووبارە بپشکنە.");
+            var errorMsg = null;
+            if (body && body.errors && typeof body.errors === "object") {
+              var keys = Object.keys(body.errors);
+              if (keys.length > 0 && body.errors[keys[0]]) {
+                errorMsg = body.errors[keys[0]];
+              }
+            }
+            if (!errorMsg && body && body.message) {
+              errorMsg = body.message;
+            }
+            throw new Error(errorMsg || "زانیارییەکانت دووبارە بپشکنە.");
+          }).catch(function (parseErr) {
+            if (parseErr && parseErr.message) {
+              throw parseErr;
+            }
+            throw new Error("زانیارییەکانت دووبارە بپشکنە.");
           });
         } else {
           throw new Error("Request failed with status " + res.status);
@@ -198,6 +221,9 @@
 
         // Reset form and cart
         form.reset();
+        if (window.OrderLocation && typeof window.OrderLocation.reset === "function") {
+          window.OrderLocation.reset();
+        }
         window.GhaslServicesState.cart.items = [];
         window.GhaslServicesState.cart.total = 0;
         

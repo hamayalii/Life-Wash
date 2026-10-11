@@ -1,0 +1,280 @@
+/**
+ * Location Picker Feature Styles (Phase B1)
+ * Prefix: ol- (Order Location)
+ * RTL-safe using CSS logical properties
+ */
+
+/* Input wrapper for address field and GPS icon button */
+.ol-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.ol-input-wrapper input {
+  width: 100%;
+  padding-inline-end: 48px; /* Room for 44px location button */
+  box-sizing: border-box;
+}
+
+/* GPS button positioned inside/at the edge of the address input */
+.ol-loc-btn {
+  position: absolute;
+  inset-inline-end: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--accent, #3b82f6);
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  font-size: 1.15rem;
+  touch-action: manipulation;
+}
+
+.ol-loc-btn:hover {
+  background-color: rgba(59, 130, 246, 0.12);
+}
+
+.ol-loc-btn:focus-visible {
+  outline: 2px solid var(--accent, #3b82f6);
+  outline-offset: 2px;
+}
+
+.ol-loc-btn[aria-busy="true"] {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.ol-loc-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Secondary trigger row: "Choose on map" button */
+.ol-map-trigger-row {
+  margin-top: 6px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.ol-choose-map-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px dashed rgba(59, 130, 246, 0.4);
+  color: var(--accent, #3b82f6);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.ol-choose-map-btn:hover {
+  background-color: rgba(59, 130, 246, 0.08);
+  border-color: var(--accent, #3b82f6);
+}
+
+.ol-choose-map-btn:focus-visible {
+  outline: 2px solid var(--accent, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* Map panel container */
+.ol-map-panel {
+  position: relative;
+  isolation: isolate;
+  z-index: 10;
+  margin-top: 14px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.ol-map-panel.hidden,
+.ol-map-panel[hidden] {
+  display: none !important;
+}
+
+/* Panel Header */
+.ol-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ol-panel-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.ol-panel-title:focus {
+  outline: none;
+}
+
+.ol-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ol-btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #60a5fa;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.825rem;
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.ol-btn-action:hover {
+  background: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+}
+
+.ol-btn-action:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.ol-btn-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+}
+
+.ol-btn-close:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.ol-btn-close:focus-visible {
+  outline: 2px solid #f87171;
+  outline-offset: 2px;
+}
+
+/* Map container element */
+.ol-map-container {
+  width: 100%;
+  height: 240px; /* Mobile first */
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #0f172a;
+}
+
+@media (min-width: 640px) {
+  .ol-map-container {
+    height: 300px; /* Desktop */
+  }
+}
+
+.ol-map-container:focus-visible {
+  outline: 2px solid var(--accent, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* Keep Leaflet layers strictly below header/nav/modals */
+.ol-map-container .leaflet-pane {
+  z-index: 400 !important;
+}
+
+.ol-map-container .leaflet-top,
+.ol-map-container .leaflet-bottom {
+  z-index: 500 !important;
+}
+
+/* Panel Footer: Status & Privacy */
+.ol-panel-footer {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ol-status {
+  min-height: 20px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  transition: color 0.2s ease;
+}
+
+.ol-status.ol-status-success {
+  color: #34d399;
+}
+
+.ol-status.ol-status-warn {
+  color: #fbbf24;
+}
+
+.ol-status.ol-status-error {
+  color: #f87171;
+}
+
+.ol-status.ol-status-loading {
+  color: #60a5fa;
+}
+
+.ol-privacy-note {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .ol-loc-btn,
+  .ol-choose-map-btn,
+  .ol-map-panel,
+  .ol-btn-action,
+  .ol-btn-close {
+    transition: none !important;
+  }
+}
