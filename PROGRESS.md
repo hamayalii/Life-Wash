@@ -20,3 +20,4 @@ FINAL item 7: DONE, mvnw clean test: Tests run: 87, Failures: 0, Errors: 16 (all
 FINAL item 8: DONE, committed "Final: CSP report-only (off by default), docs, manual test checklist"
 FINAL FIXES: DONE, SecurityConfig permitAll for GET /api/v1/geocode/reverse, GeocodeSecurityTest (2 tests pass), dashboard.js label updated, docs/LOCATION_FEATURE.md corrected
 UI item 1: DONE
+UI item 2: DONE
