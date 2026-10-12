@@ -8,6 +8,7 @@
   // Kurdish Sorani UI Strings
   const STR = {
     chooseMapLabel: "دیاریکردن لەسەر نەخشە",
+    chooseMapSelected: "ناونیشانەکە دیاری کرا",
     mapTitle: "نەخشەی شوێن",
     myLocation: "شوێنی من",
     close: "داخستن",
@@ -316,6 +317,29 @@
 
     // Trigger reverse geocoding with debounce and abort handling (Phase B2)
     triggerReverseGeocode(state.latitude, state.longitude);
+
+    // Update button to selected state
+    updateChooseMapButtonState(true);
+  }
+
+  /**
+   * Update chooseMapBtn to reflect selected state
+   */
+  function updateChooseMapButtonState(isSelected) {
+    if (!chooseMapBtn) return;
+
+    const textSpan = chooseMapBtn.querySelector("span");
+    if (isSelected) {
+      chooseMapBtn.classList.add("ol-choose-map-btn-selected");
+      if (textSpan) {
+        textSpan.textContent = STR.chooseMapSelected;
+      }
+    } else {
+      chooseMapBtn.classList.remove("ol-choose-map-btn-selected");
+      if (textSpan) {
+        textSpan.textContent = STR.chooseMapLabel;
+      }
+    }
   }
 
   /**
