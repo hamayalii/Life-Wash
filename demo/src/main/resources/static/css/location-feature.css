@@ -4,74 +4,13 @@
  * RTL-safe using CSS logical properties
  */
 
-/* Input wrapper for address field and GPS icon button */
-.ol-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.ol-input-wrapper input {
-  width: 100%;
-  padding-inline-end: 48px; /* Room for 44px location button */
-  box-sizing: border-box;
-}
-
-/* GPS button positioned inside/at the edge of the address input */
-.ol-loc-btn {
-  position: absolute;
-  inset-inline-end: 2px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 44px;
-  min-width: 44px;
-  height: 44px;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  color: var(--accent, #3b82f6);
-  cursor: pointer;
-  padding: 0;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-  font-size: 1.15rem;
-  touch-action: manipulation;
-}
-
-.ol-loc-btn:hover {
-  background-color: rgba(59, 130, 246, 0.12);
-}
-
-.ol-loc-btn:focus-visible {
-  outline: 2px solid var(--accent, #3b82f6);
-  outline-offset: 2px;
-}
-
-.ol-loc-btn[aria-busy="true"] {
-  cursor: wait;
-  opacity: 0.7;
-}
-
-.ol-loc-btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-/* Secondary trigger row: "Choose on map" button */
-.ol-map-trigger-row {
-  margin-top: 6px;
-  display: flex;
-  justify-content: flex-start;
-}
-
+/* Full-width map trigger button */
 .ol-choose-map-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  width: 100%;
   background: transparent;
   border: 1px dashed rgba(59, 130, 246, 0.4);
   color: var(--accent, #3b82f6);
@@ -81,6 +20,7 @@
   font-family: inherit;
   cursor: pointer;
   min-height: 44px;
+  box-sizing: border-box;
   transition: all 0.2s ease;
   touch-action: manipulation;
 }
@@ -342,7 +282,6 @@
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .ol-loc-btn,
   .ol-choose-map-btn,
   .ol-map-panel,
   .ol-btn-action,

@@ -7,7 +7,6 @@
 
   // Kurdish Sorani UI Strings
   const STR = {
-    locBtnLabel: "دیاریکردنی شوێن",
     chooseMapLabel: "دیاریکردن لەسەر نەخشە",
     mapTitle: "نەخشەی شوێن",
     myLocation: "شوێنی من",
@@ -59,7 +58,6 @@
   let currentRequestId = 0;
 
   // DOM Elements
-  const locBtn = document.getElementById("locBtn");
   const chooseMapBtn = document.getElementById("chooseMapBtn");
   const mapPanel = document.getElementById("mapPanel");
   const mapTitle = document.getElementById("mapTitle");
@@ -541,23 +539,9 @@
   /**
    * Event Listeners setup
    */
-  if (locBtn) {
-    locBtn.addEventListener("click", function () {
-      requestGeolocation(locBtn);
-    });
-  }
-
   if (chooseMapBtn) {
     chooseMapBtn.addEventListener("click", function () {
-      openMapPanel(chooseMapBtn);
-      initOrUpdateMap(
-        state.latitude != null ? state.latitude : DEFAULT_LAT,
-        state.longitude != null ? state.longitude : DEFAULT_LNG,
-        state.latitude != null ? GPS_ZOOM : DEFAULT_ZOOM,
-        state.locationSource === "gps"
-      ).catch(function () {
-        setStatus(STR.error_map_load, "error");
-      });
+      requestGeolocation(chooseMapBtn);
     });
   }
 
