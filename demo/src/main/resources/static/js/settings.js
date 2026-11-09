@@ -182,24 +182,31 @@ function initializeNewServiceForm() {
     if (newServiceForm) {
         newServiceForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const kurdishName = document.getElementById('serviceNameKurdish').value;
             const englishName = document.getElementById('serviceNameEnglish').value;
             const basePrice = document.getElementById('basePrice').value;
             const pricingUnit = document.getElementById('pricingUnit').value;
             const sofaSetSize = document.getElementById('sofaStandardSetSize').value;
             const isCustomPriced = document.getElementById('isCustomPriced').checked;
-            
+
             // Validate inputs
             if (!kurdishName || !englishName || !basePrice || !pricingUnit) {
                 showToast('تکایە هەموو زانیارییەکان پڕ بکەرەوە', 'error');
                 return;
             }
-            
+
+            // Validate numeric inputs (after Kurdish numeral conversion by global-utils.js)
+            const basePriceNum = parseFloat(basePrice);
+            if (isNaN(basePriceNum) || basePriceNum <= 0) {
+                showToast('تکایە نرخێکی دروست بنووسە', 'error');
+                return;
+            }
+
             const request = {
                 kurdishName: kurdishName,
                 englishName: englishName,
-                basePrice: parseFloat(basePrice),
+                basePrice: basePriceNum,
                 pricingUnit: pricingUnit,
                 sofaStandardSetSize: pricingUnit === 'PER_PERSON' ? (parseInt(sofaSetSize) || 10) : null,
                 isCustomPriced: isCustomPriced
@@ -350,6 +357,8 @@ function renderPricingCards(pricingList) {
     
     document.querySelectorAll('.sofa-total').forEach(input => {
         input.addEventListener('input', function() {
+            // Note: Kurdish numeral conversion is handled by global-utils.js in capture phase
+            // This listener receives already-converted values
             const card = this.closest('.pricing-card');
             const perPersonDisplay = card.querySelector('.per-person-rate');
             const total = parseFloat(this.value) || 0;
@@ -362,14 +371,16 @@ function renderPricingCards(pricingList) {
     // Reactive discount calculation: auto-calculate percentage from discount price
     document.querySelectorAll('.discount-price').forEach(input => {
         input.addEventListener('input', function() {
+            // Note: Kurdish numeral conversion is handled by global-utils.js in capture phase
+            // This listener receives already-converted values
             const card = this.closest('.pricing-card');
             const discountPrice = parseFloat(this.value) || 0;
             const basePriceInput = card.querySelector('.base-price');
             const percentageInput = card.querySelector('.discount-percentage');
-            
+
             if (basePriceInput && percentageInput && !basePriceInput.disabled) {
                 const basePrice = parseFloat(basePriceInput.value) || 0;
-                
+
                 // Division by zero safety
                 if (basePrice > 0) {
                     const discountPercentage = ((basePrice - discountPrice) / basePrice) * 100;
@@ -381,7 +392,31 @@ function renderPricingCards(pricingList) {
             }
         });
     });
-    
+
+    // Reactive discount calculation: auto-calculate discount price from percentage
+    document.querySelectorAll('.discount-percentage').forEach(input => {
+        input.addEventListener('input', function() {
+            // Note: Kurdish numeral conversion is handled by global-utils.js in capture phase
+            // This listener receives already-converted values
+            const card = this.closest('.pricing-card');
+            const percentage = parseFloat(this.value) || 0;
+            const basePriceInput = card.querySelector('.base-price');
+            const discountPriceInput = card.querySelector('.discount-price');
+
+            if (basePriceInput && discountPriceInput && !basePriceInput.disabled) {
+                const basePrice = parseFloat(basePriceInput.value) || 0;
+
+                // Division by zero safety
+                if (basePrice > 0) {
+                    const discountPrice = basePrice - (basePrice * percentage / 100);
+                    discountPriceInput.value = Math.max(0, Math.round(discountPrice * 100) / 100);
+                } else {
+                    discountPriceInput.value = '';
+                }
+            }
+        });
+    });
+
     // Event delegation for delete service buttons
     const pricingContainer = document.getElementById('pricing-container');
     if (pricingContainer) {
@@ -389,7 +424,7 @@ function renderPricingCards(pricingList) {
             const deleteBtn = e.target.closest('.delete-service-btn');
             if (deleteBtn) {
                 const serviceId = deleteBtn.dataset.id;
-                if (confirm('دڵنیایت لە سڕینەوەی ئەم خزمەتگوزارییە؟')) {
+                if (await AppDialog.confirm({ title: 'سڕینەوە', message: 'دڵنیایت لە سڕینەوەی ئەم خزمەتگوزارییە؟', danger: true })) {
                     await deleteService(serviceId);
                 }
             }
@@ -453,7 +488,8 @@ function createPricingCard(pricing) {
     label1.textContent = 'نرخی شووشتنی خزمەتگوزاری (IQD)';
     
     const basePriceInput = document.createElement('input');
-    basePriceInput.type = 'number';
+    basePriceInput.type = 'text';
+    basePriceInput.inputMode = 'decimal';
     basePriceInput.className = 'price-input base-price';
     basePriceInput.value = pricing.basePrice;
     basePriceInput.dataset.serviceType = pricing.serviceType;
@@ -503,7 +539,8 @@ function createPricingCard(pricing) {
         sofaLabel1.textContent = 'نرخی کۆی گشتی (IQD)';
         
         const sofaTotalInput = document.createElement('input');
-        sofaTotalInput.type = 'number';
+        sofaTotalInput.type = 'text';
+        sofaTotalInput.inputMode = 'decimal';
         sofaTotalInput.className = 'price-input sofa-total';
         sofaTotalInput.value = pricing.basePrice;
         
@@ -565,7 +602,8 @@ function createPricingCard(pricing) {
     discountLabel1.textContent = 'نرخی داشکاندن (IQD)';
     
     const discountPriceInput = document.createElement('input');
-    discountPriceInput.type = 'number';
+    discountPriceInput.type = 'text';
+    discountPriceInput.inputMode = 'decimal';
     discountPriceInput.className = 'price-input discount-price';
     discountPriceInput.value = pricing.discountPrice || '';
     if (!pricing.isDiscountActive) {
@@ -583,7 +621,8 @@ function createPricingCard(pricing) {
     discountLabel2.textContent = 'ڕێژەی داشکاندن (%)';
     
     const discountPercentageInput = document.createElement('input');
-    discountPercentageInput.type = 'number';
+    discountPercentageInput.type = 'text';
+    discountPercentageInput.inputMode = 'decimal';
     discountPercentageInput.className = 'price-input discount-percentage';
     discountPercentageInput.value = pricing.discountPercentage || '';
     if (!pricing.isDiscountActive) {
@@ -901,7 +940,7 @@ async function restoreBackup() {
         return;
     }
     
-    if (!confirm('ئاگاداربە: ئەمە داتای ئێستا دەسڕێتەوە و جێگەی دەگرێتەوە. دڵنیایت؟')) {
+    if (!await AppDialog.confirm({ title: 'گەڕاندنەوەی باکئەپ', message: 'ئاگاداربە: ئەمە داتای ئێستا دەسڕێتەوە و جێگەی دەگرێتەوە. دڵنیایت؟', danger: true })) {
         return;
     }
     

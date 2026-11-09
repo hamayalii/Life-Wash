@@ -320,7 +320,8 @@
       inputField.appendChild(labelElement);
       
       const input = document.createElement('input');
-      input.type = 'number';
+      input.type = 'text';
+      input.inputMode = 'decimal';
       input.id = `quantity-${item.id}`;
       input.name = `quantity-${item.id}`;
       input.min = '0.1';
@@ -333,8 +334,36 @@
       cartItemInputsContainer.appendChild(inputField);
       
       // Add input change listener
+      // Note: Kurdish numeral conversion is handled by global-utils.js in capture phase
+      // This listener receives already-converted values
       input.addEventListener('input', (e) => {
-        updateItemQuantity(item.id, e.target.value);
+        const value = e.target.value;
+
+        // Validate that it's a valid number after conversion
+        if (value === '' || value === '.') {
+          updateItemQuantity(item.id, null);
+          return;
+        }
+
+        // Use robust validation from global-utils.js
+        if (typeof isValidNumericString === 'function' && isValidNumericString(value, false)) {
+          updateItemQuantity(item.id, value);
+        } else {
+          // If invalid, clear to prevent partial numeric strings
+          // This rejects inputs like "123abc"
+          const numValue = parseFloat(value);
+          if (!isNaN(numValue) && numValue >= 0) {
+            // Fallback: if parseFloat works but strict validation fails,
+            // still allow it but strip non-numeric chars
+            const cleanValue = value.replace(/[^0-9.]/g, '');
+            if (cleanValue !== value) {
+              e.target.value = cleanValue;
+            }
+            updateItemQuantity(item.id, cleanValue || null);
+          } else {
+            updateItemQuantity(item.id, null);
+          }
+        }
       });
     });
   }

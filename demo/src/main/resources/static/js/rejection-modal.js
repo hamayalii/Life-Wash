@@ -52,7 +52,7 @@ async function fetchRejectionReasons() {
     
   } catch (error) {
     console.error('Error fetching rejection reasons:', error);
-    alert('هەڵە لە بارکردنی هۆکارەکانی ڕەتکردنەوە');
+    AppDialog.alert({ title: 'هەڵە', message: 'هەڵە لە بارکردنی هۆکارەکانی ڕەتکردنەوە', type: 'error' });
   }
 }
 
@@ -108,7 +108,7 @@ async function handleRejection(reasonValue) {
         closeRejectionModal();
         showConflictModal(orderId, 'reject');
       } else {
-        alert('هەڵە: ئەم داواکارییە لەلایەن بەکارهێنەرێکی ترەوە دەستکاری کراوە. تکایە دووبارە هەوڵبدەرەوە.');
+        AppDialog.alert({ title: 'هەڵە', message: 'هەڵە: ئەم داواکارییە لەلایەن بەکارهێنەرێکی ترەوە دەستکاری کراوە. تکایە دووبارە هەوڵبدەرەوە.', type: 'error' });
       }
       return;
     }
@@ -128,7 +128,7 @@ async function handleRejection(reasonValue) {
     
   } catch (error) {
     console.error('Error rejecting order:', error);
-    alert('هەڵە لە ڕەتکردنەوەی داواکارییەکە: ' + error.message);
+    AppDialog.alert({ title: 'هەڵە', message: 'هەڵە لە ڕەتکردنەوەی داواکارییەکە: ' + error.message, type: 'error' });
   }
 }
 

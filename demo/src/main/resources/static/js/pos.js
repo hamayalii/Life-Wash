@@ -1,12 +1,6 @@
 // Global state for POS cart
 let posCart = [];
 
-// Global state for services (Single Source of Truth from API)
-let posServicesState = {
-  services: [],
-  loaded: false
-};
-
 // Global state for POS history pagination
 let posHistoryState = {
   currentPage: 0,
@@ -19,7 +13,7 @@ let posHistoryState = {
  * Dynamic Price Calculation: P(q) = (B / S) * q
  * Mathematical determinism for Zero Trust Architecture
  * 
- * @param {Object} serviceItem - Service object from API (window.GhaslServicesState or posServicesState)
+ * @param {Object} serviceItem - Service object from DOM dataset
  * @param {number} userQuantity - Quantity requested by user
  * @returns {number} Calculated price
  */
@@ -88,12 +82,14 @@ const modalServiceNameHidden = document.getElementById('modal-service-name-hidde
 const modalBasePrice = document.getElementById('modal-base-price');
 const modalDefaultUnit = document.getElementById('modal-default-unit');
 const modalQuantity = document.getElementById('modal-quantity');
+const modalQuantityLabel = document.getElementById('modal-quantity-label');
 const modalUnitLabel = document.getElementById('modal-unit-label');
 const modalNegotiatedPriceField = document.querySelector('.pos-negotiated-price-field');
 const modalNegotiatedPrice = document.getElementById('modal-negotiated-price');
 
 // Cart DOM Elements
 const cartItemsContainer = document.getElementById('cart-items');
+const cartItemInputsContainer = document.getElementById('cart-item-inputs');
 const grandTotalElement = document.getElementById('grand-total');
 const executeOrderBtn = document.getElementById('execute-order-btn');
 
@@ -102,13 +98,6 @@ const posCustomerNameInput = document.getElementById('pos-customer-name');
 const posCustomerPhoneInput = document.getElementById('pos-customer-phone');
 const posCustomerAddressInput = document.getElementById('pos-customer-address');
 const posCustomerNotesInput = document.getElementById('pos-customer-notes');
-
-// Receipt Modal DOM Elements
-const receiptModal = document.getElementById('receipt-modal');
-const receiptBody = document.getElementById('receipt-body');
-const receiptModalClose = document.getElementById('receipt-modal-close');
-const receiptPrint = document.getElementById('receipt-print');
-const receiptClose = document.getElementById('receipt-close');
 
 // Custom Price Modal DOM Elements
 const customPriceModal = document.getElementById('custom-price-modal');
@@ -152,20 +141,16 @@ async function fetchAndRenderServices() {
     const invalidServices = services.filter(s => !s.id);
     if (invalidServices.length > 0) {
       console.error('Critical: Services missing id:', invalidServices);
-      alert('Error: Some services have invalid configuration. Please refresh.');
+      AppDialog.alert({ title: 'هەڵە', message: 'Error: Some services have invalid configuration. Please refresh.', type: 'error' });
       return;
     }
-
-    // Store in global state for reuse
-    posServicesState.services = services;
-    posServicesState.loaded = true;
 
     // Clear loading state
     servicesGrid.textContent = '';
 
     // Dynamically generate service cards using safe DOM manipulation
-    services.forEach(service => {
-      const card = createPosServiceCard(service);
+    services.forEach((service, index) => {
+      const card = createPosServiceCard(service, index);
       servicesGrid.appendChild(card);
     });
 
@@ -198,7 +183,7 @@ async function fetchAndRenderServices() {
 /**
  * Create a single POS service card element safely
  */
-function createPosServiceCard(service) {
+function createPosServiceCard(service, index) {
   const card = document.createElement('div');
   card.className = 'pos-service-card';
   card.dataset.serviceId = service.id;
@@ -211,6 +196,7 @@ function createPosServiceCard(service) {
   card.dataset.customPriced = service.customPriced;
   card.dataset.sofaStandardSetSize = service.sofaStandardSetSize || 1;
   card.dataset.coreServiceId = service.id;  // Service.id is now the single source of truth
+  card.dataset.shortcut = (index + 1).toString();  // Keyboard shortcut: Alt+1, Alt+2, etc.
 
   // Icon
   const iconDiv = document.createElement('div');
@@ -225,7 +211,7 @@ function createPosServiceCard(service) {
   
   const nameElement = document.createElement('h3');
   nameElement.className = 'pos-service-name';
-  nameElement.textContent = service.kurdishName;
+  nameElement.innerHTML = `${service.kurdishName} <kbd>Alt+${index + 1}</kbd>`;
   
   const priceElement = document.createElement('p');
   priceElement.className = 'pos-service-price';
@@ -306,18 +292,23 @@ customPriceCancel.addEventListener('click', closeCustomPriceModal);
 
 customPriceConfirm.addEventListener('click', () => {
   const customPrice = customPriceInput.value;
-  
+
   if (customPrice && customPrice !== '') {
-    const priceValue = parseFloat(customPrice);
-    if (!isNaN(priceValue) && priceValue > 0) {
+    // Use strict validation to reject partially numeric strings
+    const priceValid = typeof isValidNumericString === 'function'
+      ? isValidNumericString(customPrice, false)
+      : !isNaN(parseFloat(customPrice)) && parseFloat(customPrice) > 0;
+
+    if (priceValid) {
+      const priceValue = parseFloat(customPrice);
       // Valid price - add directly to cart with custom price
       addCustomPricedServiceToCart(selectedCardForCustomPrice, priceValue);
       closeCustomPriceModal();
     } else {
-      alert('تکایە نرخێکی درووست بنووسە');
+      AppDialog.alert({ title: 'ئاگاداری', message: 'تکایە نرخێکی درووست بنووسە', type: 'warning' });
     }
   } else {
-    alert('تکایە نرخێک بنووسە');
+    AppDialog.alert({ title: 'ئاگاداری', message: 'تکایە نرخێک بنووسە', type: 'warning' });
   }
 });
 
@@ -360,6 +351,8 @@ function addCustomPricedServiceToCart(card, customPrice) {
   
   posCart.unshift(newItem);  // Add to top of cart (newest first)
   renderCart();
+  renderDynamicInputs();
+  validateCartForSubmission();
 }
 
 // ── INITIALIZE: Fetch services on DOMContentLoaded ─────────────────────────────
@@ -372,7 +365,7 @@ executeOrderBtn.addEventListener('click', submitOrder);
 async function submitOrder() {
   // Validate cart is not empty
   if (posCart.length === 0) {
-    alert('تکایە سەرەتا خزمەتگوزارییەک زیاد بکە بۆ لیستەکە.');
+    AppDialog.alert({ title: 'ئاگاداری', message: 'تکایە سەرەتا خزمەتگوزارییەک زیاد بکە بۆ لیستەکە.', type: 'warning' });
     return;
   }
 
@@ -383,7 +376,7 @@ async function submitOrder() {
   const customerNotes = posCustomerNotesInput.value.trim();
 
   if (!customerName || !customerPhone) {
-    alert('تکایە ناوی کڕیار و ژمارەی تەلەفۆن بنووسە.');
+    AppDialog.alert({ title: 'ئاگاداری', message: 'تکایە ناوی کڕیار و ژمارەی تەلەفۆن بنووسە.', type: 'warning' });
     posCustomerNameInput.focus();
     return;
   }
@@ -476,19 +469,19 @@ async function submitOrder() {
     } else if (response.status === 400) {
       // Bad Request - validation error
       const errorData = await response.json().catch(() => ({}));
-      alert('Validation Error: ' + (errorData.message || 'Please check your input and try again.'));
+      AppDialog.alert({ title: 'هەڵە', message: 'Validation Error: ' + (errorData.message || 'Please check your input and try again.'), type: 'error' });
     } else if (response.status === 500) {
       // Internal Server Error
-      alert('Server Error: An unexpected error occurred. Please try again later.');
+      AppDialog.alert({ title: 'هەڵە', message: 'Server Error: An unexpected error occurred. Please try again later.', type: 'error' });
     } else {
       // Other errors
-      alert('Error: Failed to create order. Status: ' + response.status);
+      AppDialog.alert({ title: 'هەڵە', message: 'Error: Failed to create order. Status: ' + response.status, type: 'error' });
     }
 
   } catch (error) {
     // Network error or fetch failure
     console.error('Error creating order:', error);
-    alert('Network Error: Unable to connect to the server. Please check your connection and try again.');
+    AppDialog.alert({ title: 'هەڵە', message: 'Network Error: Unable to connect to the server. Please check your connection and try again.', type: 'error' });
   } finally {
     // Re-enable button and restore original text
     executeOrderBtn.disabled = false;
@@ -585,6 +578,18 @@ async function showHistoryModal() {
       const actionsDiv = document.createElement('div');
       actionsDiv.className = 'history-item-actions';
       
+      const reprintBtn = document.createElement('button');
+      reprintBtn.className = 'history-item-btn reprint';
+      reprintBtn.onclick = function() { reprintOrder(order); };
+      
+      const reprintIcon = document.createElement('i');
+      reprintIcon.className = 'fa-solid fa-print';
+      
+      const reprintText = document.createTextNode(' چاپکردنەوە');
+      
+      reprintBtn.appendChild(reprintIcon);
+      reprintBtn.appendChild(reprintText);
+      
       const rejectBtn = document.createElement('button');
       rejectBtn.className = 'history-item-btn reject';
       rejectBtn.onclick = function() { handleRejectFromHistory(order.id); };
@@ -597,6 +602,7 @@ async function showHistoryModal() {
       rejectBtn.appendChild(rejectIcon);
       rejectBtn.appendChild(rejectText);
       
+      actionsDiv.appendChild(reprintBtn);
       actionsDiv.appendChild(rejectBtn);
       
       historyItem.appendChild(headerDiv);
@@ -706,207 +712,95 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Generate Receipt Function
+// ── RECEIPT PRINTER (animated, Replay + Print Copy) ──────────────────────────
+
+// Kurdish labels + shop identity shared by the sale receipt and reprints.
+function buildReceiptOptions(data) {
+  return Object.assign({
+    merchant: 'خزمەتگوزاری غەسلی لایف',
+    merchantSubtext: 'پسولەی داواکاری',
+    currency: 'IQD',
+    statusTitle: 'پارەدان تەواو بوو',
+    statusSubtitle: 'پسولە دەرچوو',
+    message: 'سوپاس بۆ هەڵبژاردنی ئێمە\n3674 970 0771\n4248 146 0770',
+    labels: {
+      statusIdle: 'چاوەڕوانی',
+      statusPrinting: 'لە چاپکردندایە...',
+      statusCompleted: 'تەواو بوو',
+      orderLabel: 'ژمارەی داواکاری',
+      dateLabel: 'بەروار',
+      paymentLabel: 'شێوازی پارەدان',
+      customerLabel: 'کڕیار',
+      phoneLabel: 'تەلەفۆن',
+      addressLabel: 'ناونیشان',
+      notesLabel: 'تێبینی',
+      subtotalLabel: 'کۆی خزمەتگوزارییەکان',
+      taxLabel: 'باج',
+      discountLabel: 'داشکاندن',
+      totalLabel: 'کۆی گشتی',
+      replay: 'دووبارە چاپکردن',
+      printCopy: 'چاپکردنی کۆپی',
+      close: 'داخستن'
+    }
+  }, data || {});
+}
+
+// Map cart items (local or stored order items) into receipt line items.
+function buildReceiptItems(items) {
+  return (items || []).map(item => ({
+    name: item.serviceName || item.name || '',
+    description: unitLabels[item.unitName] || item.unitName || '',
+    qty: Number(item.quantity != null ? item.quantity : item.qty) || 0,
+    price: Number(item.unitPrice != null ? item.unitPrice : item.price) || 0,
+    total: Number(item.totalPrice != null ? item.totalPrice : item.total) || 0
+  }));
+}
+
 function generateReceipt(order, cartItems, customerName, customerPhone, customerAddress, customerNotes) {
-  const currentDate = new Date().toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
+  const items = buildReceiptItems(cartItems);
+  const subtotal = items.reduce((sum, it) => sum + it.total, 0);
+  const total = (order && order.grandTotal != null) ? Number(order.grandTotal) : subtotal;
 
-  const currentTime = new Date().toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-
-  // Calculate grand total from local cart items
-  let grandTotal = 0;
-  
-  receiptBody.textContent = '';
-  
-  // Header
-  const headerDiv = document.createElement('div');
-  headerDiv.className = 'pos-receipt-header';
-  
-  const h4 = document.createElement('h4');
-  h4.textContent = 'خزمەتگوزاری غەسلی لایف';
-  
-  const p1 = document.createElement('p');
-  p1.textContent = 'پسولەی داواکاری';
-  
-  const p2 = document.createElement('p');
-  p2.textContent = 'Order #' + order.id;
-  
-  const p3 = document.createElement('p');
-  p3.textContent = currentDate + ' - ' + currentTime;
-  
-  headerDiv.appendChild(h4);
-  headerDiv.appendChild(p1);
-  headerDiv.appendChild(p2);
-  headerDiv.appendChild(p3);
-  
-  // Customer info
-  const customerDiv = document.createElement('div');
-  customerDiv.className = 'pos-receipt-customer';
-  
-  const customerP1 = document.createElement('p');
-  const strong1 = document.createElement('strong');
-  strong1.textContent = 'کڕیار:';
-  customerP1.appendChild(strong1);
-  customerP1.appendChild(document.createTextNode(' ' + customerName));
-  
-  const customerP2 = document.createElement('p');
-  const strong2 = document.createElement('strong');
-  strong2.textContent = 'تەلەفۆن:';
-  customerP2.appendChild(strong2);
-  customerP2.appendChild(document.createTextNode(' ' + customerPhone));
-  
-  customerDiv.appendChild(customerP1);
-  customerDiv.appendChild(customerP2);
-  
-  if (customerAddress) {
-    const customerP3 = document.createElement('p');
-    const strong3 = document.createElement('strong');
-    strong3.textContent = 'ناونیشان:';
-    customerP3.appendChild(strong3);
-    customerP3.appendChild(document.createTextNode(' ' + customerAddress));
-    customerDiv.appendChild(customerP3);
-  }
-  
-  if (customerNotes) {
-    const customerP4 = document.createElement('p');
-    const strong4 = document.createElement('strong');
-    strong4.textContent = 'تێبینی:';
-    customerP4.appendChild(strong4);
-    customerP4.appendChild(document.createTextNode(' ' + customerNotes));
-    customerDiv.appendChild(customerP4);
-  }
-  
-  // Items
-  const itemsDiv = document.createElement('div');
-  itemsDiv.className = 'pos-receipt-items';
-  
-  const headerItem = document.createElement('div');
-  headerItem.className = 'pos-receipt-item';
-  headerItem.style.fontWeight = '600';
-  headerItem.style.borderBottom = '1px dashed var(--muted)';
-  headerItem.style.paddingBottom = '0.5rem';
-  headerItem.style.marginBottom = '0.5rem';
-  
-  const span1 = document.createElement('span');
-  span1.textContent = 'خزمەتگوزاری';
-  
-  const span2 = document.createElement('span');
-  span2.textContent = 'بڕ';
-  
-  const span3 = document.createElement('span');
-  span3.textContent = 'نرخ';
-  
-  headerItem.appendChild(span1);
-  headerItem.appendChild(span2);
-  headerItem.appendChild(span3);
-  itemsDiv.appendChild(headerItem);
-  
-  cartItems.forEach(item => {
-    grandTotal += item.totalPrice;
-    
-    const formattedQuantity = item.quantity % 1 === 0 ? item.quantity : item.quantity.toFixed(2);
-    const formattedUnitPrice = item.unitPrice.toFixed(2);
-    const formattedTotalPrice = item.totalPrice.toFixed(2);
-    const unitLabel = unitLabels[item.unitName] || item.unitName;
-    const serviceName = item.serviceName;
-    
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'pos-receipt-item';
-    
-    const itemSpan1 = document.createElement('span');
-    itemSpan1.textContent = serviceName;
-    
-    const itemSpan2 = document.createElement('span');
-    itemSpan2.textContent = formattedQuantity + ' ' + unitLabel + ' × ' + formattedUnitPrice;
-    
-    const itemSpan3 = document.createElement('span');
-    itemSpan3.textContent = formattedTotalPrice + ' IQD';
-    
-    itemDiv.appendChild(itemSpan1);
-    itemDiv.appendChild(itemSpan2);
-    itemDiv.appendChild(itemSpan3);
-    itemsDiv.appendChild(itemDiv);
-  });
-  
-  // Total
-  const totalDiv = document.createElement('div');
-  totalDiv.className = 'pos-receipt-total';
-  
-  const totalSpan1 = document.createElement('span');
-  totalSpan1.textContent = 'کۆی گشتی:';
-  
-  const totalSpan2 = document.createElement('span');
-  totalSpan2.textContent = grandTotal.toFixed(2) + ' IQD';
-  
-  totalDiv.appendChild(totalSpan1);
-  totalDiv.appendChild(totalSpan2);
-  
-  // Footer
-  const footerDiv = document.createElement('div');
-  footerDiv.style.textAlign = 'center';
-  footerDiv.style.marginTop = '1rem';
-  footerDiv.style.fontSize = '0.8rem';
-  footerDiv.style.color = 'var(--muted)';
-  
-  const footerP1 = document.createElement('p');
-  footerP1.textContent = 'سوپاس بۆ هەڵبژاردنی ئێمە';
-  
-  const footerP2 = document.createElement('p');
-  footerP2.textContent = 'بە پەیوەندی کردن بە ئێمەوە ئەتوانن لە ڕێگەی ئەم دوو ژمارە تەلەفونەوە پەیوەندیمان پێوە بکەن';
-  
-  const footerBr = document.createElement('br');
-  
-  const footerP3 = document.createElement('p');
-  footerP3.textContent = '3674 970 0771';
-  
-  const footerP4 = document.createElement('p');
-  footerP4.textContent = '4248 146 0770';
-  
-  footerDiv.appendChild(footerP1);
-  footerDiv.appendChild(footerP2);
-  footerDiv.appendChild(footerBr);
-  footerDiv.appendChild(footerP3);
-  footerDiv.appendChild(footerP4);
-  
-  receiptBody.appendChild(headerDiv);
-  receiptBody.appendChild(customerDiv);
-  receiptBody.appendChild(itemsDiv);
-  receiptBody.appendChild(totalDiv);
-  receiptBody.appendChild(footerDiv);
-
-  // Show receipt modal
-  receiptModal.classList.add('active');
+  ReceiptPrinter.open(buildReceiptOptions({
+    orderNumber: '#' + (order ? order.id : ''),
+    date: new Date(),
+    customer: {
+      name: customerName || '',
+      phone: customerPhone || '',
+      address: customerAddress || '',
+      notes: customerNotes || ''
+    },
+    items: items,
+    subtotal: subtotal,
+    total: total
+  }));
 }
 
-// Close Receipt Modal
-function closeReceiptModal() {
-  receiptModal.classList.remove('active');
-  receiptBody.textContent = '';
+// Reprint an existing order from POS history using stored order data.
+function reprintOrder(order) {
+  const items = buildReceiptItems((order.items || []).map(it => ({
+    serviceName: (it.serviceCategory && (it.serviceCategory.kurdishName || it.serviceCategory.englishName)) || '',
+    unitName: it.unitName,
+    quantity: it.quantity,
+    unitPrice: it.unitPrice,
+    totalPrice: it.totalPrice
+  })));
+  const subtotal = items.reduce((sum, it) => sum + it.total, 0);
+  const total = (order && order.grandTotal != null) ? Number(order.grandTotal) : subtotal;
+
+  ReceiptPrinter.open(buildReceiptOptions({
+    orderNumber: '#' + (order ? order.id : ''),
+    date: (order && order.createdAt) ? new Date(order.createdAt) : new Date(),
+    customer: {
+      name: (order && order.customerName) || '',
+      phone: (order && order.phoneNumber) || '',
+      address: (order && order.address) || ''
+    },
+    items: items,
+    subtotal: subtotal,
+    total: total
+  }));
 }
-
-// Receipt modal close button
-receiptModalClose.addEventListener('click', closeReceiptModal);
-
-// Receipt close button
-receiptClose.addEventListener('click', closeReceiptModal);
-
-// Close receipt modal when clicking backdrop
-receiptModal.addEventListener('click', (e) => {
-  if (e.target === receiptModal || e.target.classList.contains('pos-modal-backdrop')) {
-    closeReceiptModal();
-  }
-});
-
-// Print Receipt
-receiptPrint.addEventListener('click', () => {
-  window.print();
-});
 
 // Open Service Selection Modal
 function openServiceModal(card) {
@@ -1053,6 +947,11 @@ function renderCart() {
     
     grandTotalElement.textContent = '0 IQD';
     executeOrderBtn.disabled = true;
+    
+    // Clear dynamic inputs when cart is empty
+    const cartItemInputsContainer = document.getElementById('cart-item-inputs');
+    if (cartItemInputsContainer) cartItemInputsContainer.innerHTML = '';
+    
     return;
   }
 
@@ -1078,7 +977,18 @@ function renderCart() {
 
   // Update grand total
   grandTotalElement.textContent = grandTotal.toFixed(2) + ' IQD';
-  executeOrderBtn.disabled = false;
+  
+  // Validate cart state for submission
+  validateCartForSubmission();
+}
+
+// Validate cart for submission (checks cart items and customer info)
+function validateCartForSubmission() {
+  const hasItems = posCart.length > 0;
+  const hasCustomerName = posCustomerNameInput && posCustomerNameInput.value.trim() !== '';
+  const hasCustomerPhone = posCustomerPhoneInput && posCustomerPhoneInput.value.trim() !== '';
+  
+  executeOrderBtn.disabled = !(hasItems && hasCustomerName && hasCustomerPhone);
 }
 
 // Create cart item element with data-row-id
@@ -1164,6 +1074,86 @@ function removeFromCart(rowId) {
 
   // Re-render cart
   renderCart();
+  renderDynamicInputs();
+  
+  // Validate cart state after item removal
+  validateCartForSubmission();
+}
+
+// Render dynamic quantity inputs for cart items (HCI focus management)
+function renderDynamicInputs() {
+  if (!cartItemInputsContainer) return;
+  cartItemInputsContainer.innerHTML = '';
+  
+  if (posCart.length === 0) return;
+  
+  posCart.forEach((item, index) => {
+    const inputField = document.createElement('div');
+    inputField.className = 'pos-form-field';
+    
+    const label = document.createElement('label');
+    label.textContent = `${item.serviceName} (${unitLabels[item.unitName] || item.unitName}):`;
+    inputField.appendChild(label);
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.inputmode = 'decimal';
+    input.dataset.rowId = item.rowId;
+    input.placeholder = 'بڕ بنووسە';
+    input.value = item.quantity % 1 === 0 ? item.quantity : item.quantity.toFixed(2);
+    
+    // Add input change listener
+    input.addEventListener('input', (e) => {
+      const value = e.target.value;
+      if (value === '' || value === '.') {
+        updateItemQuantity(item.rowId, null);
+        return;
+      }
+      
+      const cleanValue = value.replace(/[^0-9.]/g, '');
+      if (cleanValue !== value) e.target.value = cleanValue;
+      updateItemQuantity(item.rowId, cleanValue || null);
+    });
+    
+    inputField.appendChild(input);
+    cartItemInputsContainer.appendChild(inputField);
+    
+    // Focus on the last input after render (HCI optimization)
+    if (index === posCart.length - 1) {
+      setTimeout(() => {
+        input.focus();
+        input.select();
+      }, 50);
+    }
+  });
+}
+
+// Update item quantity from inline input
+function updateItemQuantity(rowId, quantity) {
+  const item = posCart.find(i => i.rowId === rowId);
+  if (item) {
+    const newQuantity = quantity ? parseFloat(quantity) : null;
+    
+    if (newQuantity && newQuantity > 0) {
+      // Recalculate price with new quantity
+      const serviceItem = {
+        activePrice: item.unitPrice * item.quantity, // Reverse to get base price
+        measurementUnit: item.unitName,
+        sofaStandardSetSize: null
+      };
+      
+      // For PER_PERSON, we need the original calculation
+      // Simplified: just recalculate based on unit price
+      item.quantity = newQuantity;
+      item.totalPrice = Math.round(item.unitPrice * newQuantity * 100) / 100;
+    } else {
+      item.quantity = null;
+      item.totalPrice = 0;
+    }
+    
+    renderCart();
+    validateCartForSubmission();
+  }
 }
 
 // Edit Item Function
@@ -1222,16 +1212,42 @@ function editItem(rowId) {
 function handleServiceFormSubmit(e) {
   e.preventDefault();
 
-  // Get form values
+  // Get form values (already converted from Kurdish numerals by global-utils.js)
   const serviceId = parseInt(modalServiceId.value);
   const coreServiceId = parseInt(modalServiceId.dataset.coreServiceId);  // No fallback - must exist
   const serviceName = modalServiceNameHidden.value;
   const activePrice = modalBasePrice.value;
   const measurementUnit = modalDefaultUnit.value ? modalDefaultUnit.value.toUpperCase() : 'PER_PIECE';
-  const quantity = parseFloat(modalQuantity.value);
-  const negotiatedPrice = modalNegotiatedPrice.value ? parseFloat(modalNegotiatedPrice.value) : null;
+  const quantityStr = modalQuantity.value;
+  const negotiatedPriceStr = modalNegotiatedPrice.value;
   const sofaStandardSetSize = modalServiceId.dataset.sofaStandardSetSize ? parseInt(modalServiceId.dataset.sofaStandardSetSize) : null;
   const editingRowId = modalServiceId.dataset.editingRowId;
+
+  // Validate numeric inputs with strict validation (after Kurdish numeral conversion)
+  // Use isValidNumericString if available, otherwise fallback to parseFloat
+  const quantityValid = typeof isValidNumericString === 'function'
+    ? isValidNumericString(quantityStr, false)
+    : !isNaN(parseFloat(quantityStr)) && parseFloat(quantityStr) > 0;
+
+  if (!quantityValid) {
+    AppDialog.alert({ title: 'ئاگاداری', message: 'تکایە بڕێکی دروست بنووسە', type: 'warning' });
+    return;
+  }
+
+  const quantity = parseFloat(quantityStr);
+
+  if (modalNegotiatedPrice.required) {
+    const negotiatedPriceValid = typeof isValidNumericString === 'function'
+      ? isValidNumericString(negotiatedPriceStr, false)
+      : !isNaN(parseFloat(negotiatedPriceStr)) && parseFloat(negotiatedPriceStr) > 0;
+
+    if (!negotiatedPriceValid) {
+      AppDialog.alert({ title: 'ئاگاداری', message: 'تکایە نرخێکی دروست بنووسە', type: 'warning' });
+      return;
+    }
+  }
+
+  const negotiatedPrice = negotiatedPriceStr ? parseFloat(negotiatedPriceStr) : null;
 
   // Zero Trust: Dynamic price calculation using P(q) = (B / S) * q
   let unitPrice;
@@ -1289,6 +1305,10 @@ function handleServiceFormSubmit(e) {
 
   // Render cart (state-driven UI)
   renderCart();
+  renderDynamicInputs();
+
+  // Validate cart state after item addition
+  validateCartForSubmission();
 
   // Close modal
   closeServiceModal();
@@ -1407,4 +1427,130 @@ if (logoutBtn) {
     // Redirect to home after logout
     window.location.href = '/index.html';
   });
+}
+
+// Customer input validation - call validateCartForSubmission on every keystroke
+if (posCustomerNameInput) {
+  posCustomerNameInput.addEventListener('input', validateCartForSubmission);
+}
+if (posCustomerPhoneInput) {
+  posCustomerPhoneInput.addEventListener('input', validateCartForSubmission);
+}
+
+// ── GLOBAL KEYBOARD SHORTCUTS (O(1) Memory Pattern) ─────────────────────────────
+// Single document-level listener for all keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  const activeElement = document.activeElement;
+  const isTextInput = activeElement && (
+    activeElement.tagName === 'INPUT' ||
+    activeElement.tagName === 'TEXTAREA' ||
+    activeElement.isContentEditable
+  );
+
+  // Escape: Clear cart completely
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    clearCart();
+    return;
+  }
+
+  // Ctrl+Enter: Submit order (only if button exists and enabled)
+  if (e.ctrlKey && e.key === 'Enter') {
+    const submitBtn = document.getElementById('execute-order-btn');
+    if (submitBtn && !submitBtn.disabled) {
+      e.preventDefault();
+      submitBtn.click();
+    }
+    return;
+  }
+
+  // Alt+[1-9]: Service shortcuts (only if Alt is strictly held)
+  if (e.altKey && /^[1-9]$/.test(e.key)) {
+    e.preventDefault();
+    
+    // Dynamic DOM query - no service knowledge required
+    const targetService = document.querySelector(`[data-shortcut="${e.key}"]`);
+    if (targetService) {
+      // Extract service data directly from DOM dataset
+      const serviceData = {
+        id: targetService.dataset.serviceId,
+        coreServiceId: targetService.dataset.coreServiceId,
+        kurdishName: targetService.dataset.serviceName,
+        englishName: targetService.dataset.englishName,
+        measurementUnit: targetService.dataset.measurementUnit,
+        activePrice: parseFloat(targetService.dataset.activePrice),
+        discountedPrice: parseFloat(targetService.dataset.discountedPrice) || null,
+        discountActive: targetService.dataset.discountActive === 'true',
+        customPriced: targetService.dataset.customPriced === 'true',
+        sofaStandardSetSize: parseFloat(targetService.dataset.sofaStandardSetSize) || 1
+      };
+      
+      // Check if custom-priced service
+      if (serviceData.customPriced) {
+        selectedCardForCustomPrice = targetService;
+        customPriceInput.value = '';
+        customPriceModal.classList.add('active');
+        customPriceInput.focus();
+      } else {
+        // Open service modal with data from DOM
+        openServiceModalWithData(serviceData);
+      }
+    }
+  }
+});
+
+// Clear cart function for Escape key
+function clearCart() {
+  posCart = [];
+  renderCart();
+  renderDynamicInputs();
+  
+  // Clear customer inputs
+  if (posCustomerNameInput) posCustomerNameInput.value = '';
+  if (posCustomerPhoneInput) posCustomerPhoneInput.value = '';
+  if (posCustomerAddressInput) posCustomerAddressInput.value = '';
+  if (posCustomerNotesInput) posCustomerNotesInput.value = '';
+  
+  // Validate cart state after clearing
+  validateCartForSubmission();
+}
+
+// Open service modal using data from DOM (no state dependency)
+function openServiceModalWithData(serviceData) {
+  modalServiceName.textContent = serviceData.kurdishName;
+  modalServiceId.value = serviceData.id;
+  modalServiceId.dataset.coreServiceId = serviceData.coreServiceId;
+  modalServiceNameHidden.value = serviceData.kurdishName;
+  modalBasePrice.value = serviceData.activePrice;
+  modalDefaultUnit.value = serviceData.measurementUnit;
+  
+  // Configure quantity input based on MeasurementUnit (Dynamic Contextual Modal)
+  configureQuantityInputForModal(serviceData.measurementUnit);
+  
+  // CRITICAL CONSTRAINT: Check if service has fixed price or requires negotiated price
+  if (serviceData.customPriced || !serviceData.activePrice || serviceData.activePrice === '' || serviceData.activePrice === '0' || serviceData.activePrice === 'null') {
+    // Service requires negotiated price - show negotiated price input
+    modalNegotiatedPriceField.classList.remove('hidden');
+    modalNegotiatedPrice.required = true;
+    modalNegotiatedPrice.value = '';
+  } else {
+    // Service has fixed price - hide negotiated price input
+    modalNegotiatedPriceField.classList.add('hidden');
+    modalNegotiatedPrice.required = false;
+    modalNegotiatedPrice.value = '';
+  }
+  
+  // Reset quantity input
+  modalQuantity.value = '';
+  
+  // Clear editing flag
+  delete modalServiceId.dataset.editingRowId;
+  
+  // Show modal
+  serviceModal.classList.add('active');
+  
+  // Focus on quantity input after modal render cycle
+  setTimeout(() => {
+    modalQuantity.focus();
+  }, 50);
 }

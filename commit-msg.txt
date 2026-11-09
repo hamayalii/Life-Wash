@@ -1,0 +1,5 @@
+UI: button green state after location selection
+
+- Add chooseMapSelected Kurdish text
+- Add .ol-choose-map-btn-selected CSS class with green color
+- Update button state when location is selected

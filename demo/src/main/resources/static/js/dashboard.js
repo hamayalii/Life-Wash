@@ -366,22 +366,35 @@ function renderOrders(orders) {
     const tr = document.createElement("tr");
     tr.className = "border-b border-slate-50 last:border-0 hover:bg-slate-50/60";
 
-    // Customer name cell with note icon
+    // Customer name cell with note badge
     const customerNameCell = document.createElement("td");
     customerNameCell.className = "py-4 pr-4 text-sm text-slate-700";
-    
+
+    const customerNameWrap = document.createElement("span");
+    customerNameWrap.className = "inline-flex items-center gap-2";
+
     const customerNameSpan = document.createElement("span");
     customerNameSpan.textContent = o.customerName || "";
-    customerNameCell.appendChild(customerNameSpan);
+    customerNameWrap.appendChild(customerNameSpan);
 
-    // Add note icon if message exists
+    // Add glassmorphic note badge if message exists
     if (o.message && o.message.trim()) {
-      const noteIcon = document.createElement("i");
-      noteIcon.className = "fas fa-exclamation-circle order-note-icon";
-      noteIcon.dataset.message = o.message; // Store message securely in dataset
-      noteIcon.style.marginRight = "8px";
-      customerNameCell.appendChild(noteIcon);
+      const noteBadge = document.createElement("button");
+      noteBadge.type = "button";
+      noteBadge.className = "order-note-icon inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/15 text-amber-500 shadow-sm shadow-amber-500/10 backdrop-blur-md transition-all duration-200 hover:scale-105 hover:bg-amber-500/25 hover:text-amber-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/40 motion-reduce:transition-none motion-reduce:hover:scale-100";
+      noteBadge.dataset.message = o.message; // Store message securely in dataset
+      noteBadge.title = o.message; // Hover preview of the note content
+      noteBadge.setAttribute("aria-label", "تێبینی کڕیار");
+
+      const noteGlyph = document.createElement("i");
+      noteGlyph.className = "fas fa-exclamation text-xs";
+      noteGlyph.setAttribute("aria-hidden", "true");
+      noteBadge.appendChild(noteGlyph);
+
+      customerNameWrap.appendChild(noteBadge);
     }
+
+    customerNameCell.appendChild(customerNameWrap);
 
     // Address cell
     const addressCell = document.createElement("td");
@@ -1419,7 +1432,7 @@ async function acceptOrder(orderId) {
 
     if (!res.ok) {
       const errorText = await res.text();
-      alert("هەڵە: " + errorText);
+      AppDialog.alert({ title: 'هەڵە', message: "هەڵە: " + errorText, type: 'error' });
       return;
     }
 
@@ -1429,7 +1442,7 @@ async function acceptOrder(orderId) {
     renderPagination(ordersPage);
   } catch (err) {
     console.error("Error accepting order:", err);
-    alert("هەڵەیەک ڕوویدا لە کاتی وەرگرتنی ئۆردەرەکە");
+    AppDialog.alert({ title: 'هەڵە', message: "هەڵەیەک ڕوویدا لە کاتی وەرگرتنی ئۆردەرەکە", type: 'error' });
   }
 }
 
@@ -1444,19 +1457,19 @@ async function rejectOrder(orderId) {
     });
   } catch (err) {
     console.error("Error rejecting order:", err);
-    alert("هەڵەیەک ڕوویدا لە کاتی ڕەتکردنەوەی ئۆردەرەکە");
+    AppDialog.alert({ title: 'هەڵە', message: "هەڵەیەک ڕوویدا لە کاتی ڕەتکردنەوەی ئۆردەرەکە", type: 'error' });
   }
 }
 
 async function updatePrice(orderId) {
-  const newPrice = prompt("تکایە نرخی نوێ بنووسە (بە دینار):");
+  const newPrice = await AppDialog.prompt({ title: 'نرخی نوێ', message: 'تکایە نرخی نوێ بنووسە (بە دینار):', placeholder: 'بە دینار' });
   if (newPrice === null || newPrice === "") {
     return;
   }
 
   const priceNum = parseFloat(newPrice);
   if (isNaN(priceNum) || priceNum <= 0) {
-    alert("تکایە نرخێکی دروست بنووسە");
+    AppDialog.alert({ title: 'ئاگاداری', message: "تکایە نرخێکی دروست بنووسە", type: 'warning' });
     return;
   }
 
@@ -1472,7 +1485,7 @@ async function updatePrice(orderId) {
 
     if (!res.ok) {
       const errorText = await res.text();
-      alert("هەڵە: " + errorText);
+      AppDialog.alert({ title: 'هەڵە', message: "هەڵە: " + errorText, type: 'error' });
       return;
     }
 
@@ -1482,12 +1495,12 @@ async function updatePrice(orderId) {
     renderPagination(ordersPage);
   } catch (err) {
     console.error("Error updating price:", err);
-    alert("هەڵەیەک ڕوویدا لە کاتی گۆڕینی نرخ");
+    AppDialog.alert({ title: 'هەڵە', message: "هەڵەیەک ڕوویدا لە کاتی گۆڕینی نرخ", type: 'error' });
   }
 }
 
 async function revertOrder(orderId) {
-  if (!confirm("ئایا دڵنیایت کە دەتەوێت ئەم داواکارییە بگەڕێنیتەوە بۆ دۆخی PENDING؟")) {
+  if (!await AppDialog.confirm({ title: 'گەڕاندنەوە', message: "ئایا دڵنیایت کە دەتەوێت ئەم داواکارییە بگەڕێنیتەوە بۆ دۆخی PENDING؟", danger: true })) {
     return;
   }
 
@@ -1503,7 +1516,7 @@ async function revertOrder(orderId) {
 
     if (!res.ok) {
       const errorText = await res.text();
-      alert("هەڵە: " + errorText);
+      AppDialog.alert({ title: 'هەڵە', message: "هەڵە: " + errorText, type: 'error' });
       return;
     }
 
@@ -1513,7 +1526,7 @@ async function revertOrder(orderId) {
     renderPagination(ordersPage);
   } catch (err) {
     console.error('Error reverting order:', err);
-    alert('هەڵە لە گەڕاندنەوەی داواکارییەکە: ' + err.message);
+    AppDialog.alert({ title: 'هەڵە', message: 'هەڵە لە گەڕاندنەوەی داواکارییەکە: ' + err.message, type: 'error' });
   }
 }
 

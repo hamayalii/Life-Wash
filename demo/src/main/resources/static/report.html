@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ku" dir="rtl">
 
 <head>
@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/report.css" />
+  <link rel="stylesheet" href="css/dialog.css" />
   <link rel="icon" href="data:," />
 </head>
 
@@ -29,14 +30,7 @@
           <div id="adminMenu" class="admin-menu hidden">
             <button id="adminToggle" class="btn btn-secondary admin-toggle"><i class="fa-solid fa-bars"></i>
               ئەدمین</button>
-            <div class="admin-dropdown hidden">
-              <a href="/index.html">سەرەکی</a>
-              <a href="/dashboard.html">داشبۆرد</a>
-              <a href="/pos.html">خاڵی داواکردن (POS)</a>
-              <a href="/settings.html">ڕێکخستنەکان</a>
-              <button id="logoutBtn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i>
-                چوونەدەرەوە</button>
-            </div>
+            <div class="admin-dropdown hidden"></div>
           </div>
         </div>
       </header>
@@ -206,15 +200,15 @@
         </div>
         
         <div class="reports-buttons-container">
-          <button class="report-button" data-report-type="DAILY">
+          <button class="report-button" onclick="openReportModal('/reports/daily-report.html')">
             <i class="fa-solid fa-calendar-day"></i>
             <span>ڕاپۆرتی ڕۆژانە</span>
           </button>
-          <button class="report-button" data-report-type="MONTHLY">
+          <button class="report-button" onclick="openReportModal('/reports/monthly-yearly-report.html', 'monthly')">
             <i class="fa-solid fa-calendar-days"></i>
             <span>ڕاپۆرتی مانگانە</span>
           </button>
-          <button class="report-button" data-report-type="YEARLY">
+          <button class="report-button" onclick="openReportModal('/reports/monthly-yearly-report.html', 'yearly')">
             <i class="fa-solid fa-calendar"></i>
             <span>ڕاپۆرتی ساڵانە</span>
           </button>
@@ -263,8 +257,30 @@
     </div>
   </div>
 
+  <!-- Iframe Modal for Standalone Reports -->
+  <div id="report-iframe-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="relative w-full max-w-4xl h-[90vh] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col">
+      <button onclick="window.closeReportModal()" class="absolute top-3 left-3 z-10 bg-gray-200 hover:bg-red-500 hover:text-white text-gray-700 w-8 h-8 rounded-full flex items-center justify-center transition">&times;</button>
+      <iframe id="report-iframe" class="w-full h-full border-none"></iframe>
+    </div>
+  </div>
+
+  <script src="js/menu.js"></script>
   <script src="js/global-utils.js"></script>
+  <script src="js/dialog.js"></script>
   <script src="js/report.js"></script>
+  <script>
+    // Iframe Modal Functions
+    window.openReportModal = function(url, reportType) {
+      document.getElementById('report-iframe').src = url + (reportType ? '?type=' + reportType : '');
+      document.getElementById('report-iframe-modal').classList.remove('hidden');
+    };
+
+    window.closeReportModal = function() {
+      document.getElementById('report-iframe-modal').classList.add('hidden');
+      document.getElementById('report-iframe').src = '';
+    };
+  </script>
 </body>
 
 </html>

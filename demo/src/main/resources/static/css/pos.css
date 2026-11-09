@@ -414,6 +414,16 @@ i,
   border-top: 2px solid var(--foam);
 }
 
+/* Modal cancel button - red color */
+.pos-modal-footer .btn-secondary {
+  background: #c0392b;
+  color: white;
+}
+
+.pos-modal-footer .btn-secondary:hover {
+  background: #a93226;
+}
+
 /* Form fields */
 .pos-form-field {
   margin-bottom: 1.25rem;
@@ -467,64 +477,6 @@ i,
   display: none;
 }
 
-/* Receipt modal */
-.pos-receipt-content {
-  max-width: 400px;
-}
-
-.pos-receipt-body {
-  padding: 1.5rem;
-  background: var(--foam);
-  margin: 1rem;
-  border-radius: 0.5rem;
-  font-family: 'Arkan Favorit', sans-serif !important;
-  font-size: 0.9rem;
-}
-
-.pos-receipt-header {
-  text-align: center;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px dashed var(--muted);
-}
-
-.pos-receipt-header h4 {
-  font-size: 1.1rem;
-  color: var(--primary);
-  margin: 0 0 0.5rem 0;
-}
-
-.pos-receipt-customer {
-  margin-bottom: 1rem;
-}
-
-.pos-receipt-customer p {
-  margin: 0.25rem 0;
-  color: var(--foreground);
-}
-
-.pos-receipt-items {
-  margin: 1rem 0;
-  border-top: 1px dashed var(--muted);
-  border-bottom: 1px dashed var(--muted);
-  padding: 1rem 0;
-}
-
-.pos-receipt-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-
-.pos-receipt-total {
-  display: flex;
-  justify-content: space-between;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--accent);
-  margin-top: 1rem;
-}
-
 /* Loading state */
 .pos-loading {
   opacity: 0.6;
@@ -558,64 +510,6 @@ i,
   .pos-modal-content {
     width: 95%;
     margin: 1rem;
-  }
-}
-
-/* Print Media Query - Hide everything except receipt */
-@media print {
-
-  /* Hide all elements except receipt modal and its content */
-  body>*:not(#receipt-modal) {
-    display: none !important;
-  }
-
-  /* Show receipt modal */
-  #receipt-modal {
-    display: flex !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    position: static !important;
-  }
-
-  /* Hide receipt modal backdrop */
-  #receipt-modal .pos-modal-backdrop {
-    display: none !important;
-  }
-
-  /* Style receipt modal content for print */
-  #receipt-modal .pos-modal-content {
-    box-shadow: none;
-    border: 1px solid #000;
-    max-width: 100%;
-    transform: none !important;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* Hide receipt modal header close button and footer buttons */
-  #receipt-modal .pos-modal-header,
-  #receipt-modal .pos-modal-footer {
-    display: none !important;
-  }
-
-  /* Style receipt body for print */
-  .pos-receipt-body {
-    margin: 0;
-    padding: 1rem;
-    border: none;
-    background: white;
-    color: black;
-  }
-
-  /* Ensure text is black for printing */
-  .pos-receipt-body * {
-    color: black !important;
-  }
-
-  /* Ensure borders are visible */
-  .pos-receipt-header,
-  .pos-receipt-items {
-    border-color: #000 !important;
   }
 }
 
@@ -762,4 +656,68 @@ i,
   background: var(--accent);
   color: white;
   border-color: var(--accent);
+}
+
+.history-item-btn.reprint {
+  background: #eaf6ff;
+  color: var(--accent);
+  border: 1px solid rgba(47, 168, 201, 0.3);
+}
+
+.history-item-btn.reprint:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Keyboard shortcut styling */
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Arkan Favorit', sans-serif !important;
+  line-height: 1;
+  color: var(--foreground);
+  background-color: rgba(14, 44, 77, 0.1);
+  border: 1px solid rgba(14, 44, 77, 0.2);
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  margin-right: 6px;
+  margin-left: 6px;
+}
+
+/* Cart item inputs container */
+.pos-cart-inputs {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(14, 44, 77, 0.1);
+}
+
+.pos-cart-inputs .pos-form-field {
+  margin-bottom: 12px;
+}
+
+.pos-cart-inputs label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.pos-cart-inputs input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(14, 44, 77, 0.2);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'Arkan Favorit', sans-serif !important;
+  transition: border-color 0.2s ease;
+}
+
+.pos-cart-inputs input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
 }

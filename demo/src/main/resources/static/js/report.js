@@ -401,7 +401,7 @@ async function updateAdSpend() {
     
     // Validate input
     if (isNaN(newAmount) || newAmount < 0) {
-        alert('تکایە بڕێکی دروست بنووسە');
+        AppDialog.alert({ title: 'ئاگاداری', message: 'تکایە بڕێکی دروست بنووسە', type: 'warning' });
         return;
     }
     
@@ -445,7 +445,7 @@ async function updateAdSpend() {
         
     } catch (error) {
         console.error('Error updating ad spend:', error);
-        alert('هەڵە لە نوێکردنەوەی خەرجی بازاریگەری: ' + error.message);
+        AppDialog.alert({ title: 'هەڵە', message: 'هەڵە لە نوێکردنەوەی خەرجی بازاریگەری: ' + error.message, type: 'error' });
     } finally {
         // Clear debounce flag and re-enable save button
         isUpdatingAdSpend = false;
@@ -853,12 +853,12 @@ async function addExpense() {
     const categoryValue = categorySelect.value;
     
     if (isNaN(amount) || amount <= 0) {
-        alert('تکایە بڕێکی دروست بنووسە');
+        AppDialog.alert({ title: 'ئاگاداری', message: 'تکایە بڕێکی دروست بنووسە', type: 'warning' });
         return;
     }
     
     if (!categoryValue) {
-        alert('جۆری خەرجییەکە هەڵبژێرە');
+        AppDialog.alert({ title: 'ئاگاداری', message: 'جۆری خەرجییەکە هەڵبژێرە', type: 'warning' });
         return;
     }
     
@@ -890,7 +890,7 @@ async function addExpense() {
         
     } catch (error) {
         console.error('Error adding expense:', error);
-        alert('هەڵە لە زیادکردنی خەرجی: ' + error.message);
+        AppDialog.alert({ title: 'هەڵە', message: 'هەڵە لە زیادکردنی خەرجی: ' + error.message, type: 'error' });
     } finally {
         addButton.disabled = false;
     }
@@ -966,7 +966,7 @@ function setupExpenseEventDelegation() {
         if (!expenseId) return;
         
         // Confirm deletion
-        if (!confirm('ئایا دڵنیای لە سڕینەوەی ئەم خەرجییە؟')) {
+        if (!await AppDialog.confirm({ title: 'سڕینەوە', message: 'ئایا دڵنیای لە سڕینەوەی ئەم خەرجییە؟', danger: true })) {
             return;
         }
         
@@ -979,16 +979,16 @@ function setupExpenseEventDelegation() {
                 // Success - refresh expenses list
                 await fetchCurrentMonthExpenses();
             } else if (response.status === 404) {
-                alert('خەرجییەکە نەدۆزرایەوە');
+                AppDialog.alert({ title: 'هەڵە', message: 'خەرجییەکە نەدۆزرایەوە', type: 'error' });
                 await fetchCurrentMonthExpenses();
             } else if (response.status === 409) {
-                alert('هەڵە لە سڕینەوە: نەتوانرا سڕایە');
+                AppDialog.alert({ title: 'هەڵە', message: 'هەڵە لە سڕینەوە: نەتوانرا سڕایە', type: 'error' });
             } else {
-                alert('هەڵە لە سڕینەوە: ' + response.status);
+                AppDialog.alert({ title: 'هەڵە', message: 'هەڵە لە سڕینەوە: ' + response.status, type: 'error' });
             }
         } catch (error) {
             console.error('Error deleting expense:', error);
-            alert('هەڵە لە پەیوەندی کردن بە سێرڤەرەوە');
+            AppDialog.alert({ title: 'هەڵە', message: 'هەڵە لە پەیوەندی کردن بە سێرڤەرەوە', type: 'error' });
         }
     });
 }
@@ -1323,6 +1323,12 @@ function initializeReportGeneration() {
             const reportType = button.dataset.reportType;
             if (!reportType) return;
             
+            // Special handling for DAILY report - open standalone HTML in new tab
+            if (reportType === 'DAILY') {
+                window.open('/reports/daily-report.html', '_blank');
+                return;
+            }
+
             generateReport(reportType);
         });
     }
@@ -1502,7 +1508,7 @@ async function exportToCsv() {
         
     } catch (error) {
         console.error('Error exporting to CSV:', error);
-        alert('هەڵە لە داگرتنی CSV: ' + error.message);
+        AppDialog.alert({ title: 'هەڵە', message: 'هەڵە لە داگرتنی CSV: ' + error.message, type: 'error' });
     }
 }
 
@@ -1544,6 +1550,6 @@ async function exportToPdf() {
         
     } catch (error) {
         console.error('Error exporting to PDF:', error);
-        alert('هەڵە لە داگرتنی PDF: ' + error.message);
+        AppDialog.alert({ title: 'هەڵە', message: 'هەڵە لە داگرتنی PDF: ' + error.message, type: 'error' });
     }
 }

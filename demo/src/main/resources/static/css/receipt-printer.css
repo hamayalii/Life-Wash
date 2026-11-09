@@ -1,0 +1,500 @@
+/* ==========================================================================
+   ReceiptPrinter — animated thermal receipt printer
+   All rules are scoped under the .rp- prefix so nothing leaks into the app.
+   ========================================================================== */
+
+.rp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(11, 36, 64, 0.62);
+  backdrop-filter: blur(4px);
+  overflow-y: auto;
+  direction: rtl;
+}
+
+.rp-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+}
+
+.rp-close {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  z-index: 5;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: #0e2c4d;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rp-close:hover {
+  background: #163a63;
+}
+
+.rp-close:focus-visible,
+.rp-btn:focus-visible {
+  outline: 2px solid #2fa8c9;
+  outline-offset: 2px;
+}
+
+/* ---- Status card ---- */
+.rp-status-card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+  color: #0f2440;
+}
+
+.rp-status-title {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.rp-status-subtitle {
+  font-size: 0.8rem;
+  color: #5a7290;
+  margin-top: 2px;
+}
+
+.rp-status-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #eaf6ff;
+  color: #2fa8c9;
+  white-space: nowrap;
+}
+
+.rp-status-badge.rp-badge-printing {
+  background: #fff3df;
+  color: #b97c12;
+}
+
+.rp-status-badge.rp-badge-completed {
+  background: #e5f7ec;
+  color: #1c8a5a;
+}
+
+/* ---- Printer chassis ---- */
+.rp-printer-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rp-printer {
+  width: 100%;
+  max-width: 360px;
+  background: linear-gradient(180deg, #2c3949, #1c2533);
+  border-radius: 16px 16px 8px 8px;
+  padding: 14px 16px 0;
+  color: #cdd6e0;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  position: relative;
+  z-index: 2;
+}
+
+.rp-printer-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: "Courier New", monospace;
+  letter-spacing: 2px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: #9fb0c3;
+}
+
+.rp-printer-led {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #3ddc84;
+  box-shadow: 0 0 8px #3ddc84;
+}
+
+.rp-root.rp-idle .rp-printer-led {
+  background: #f2b134;
+  box-shadow: 0 0 8px #f2b134;
+}
+
+.rp-printer-slot {
+  margin: 12px auto 0;
+  height: 12px;
+  width: 100%;
+  background: #0c1219;
+  border-radius: 8px 8px 0 0;
+}
+
+/* ---- Paper holder (extrusion) ---- */
+.rp-paper-holder {
+  width: 262px;
+  max-width: 88%;
+  margin: -1px auto 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.rp-root.rp-printing .rp-paper,
+.rp-root.rp-completed .rp-paper {
+  transform: translateY(0);
+}
+
+/* ---- Paper ---- */
+.rp-paper {
+  --rp-paper: #ffffff;
+  --rp-line: rgba(0, 0, 0, 0.16);
+  background: var(--rp-paper);
+  color: #17202b;
+  font-family: "Arkan Favorit", "Segoe UI", Tahoma, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 16px 14px 0;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.2);
+  direction: rtl;
+  text-align: right;
+  transform: translateY(-100%);
+  transition: transform var(--rp-duration, 2.4s) cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.rp-paper.rp-theme-light {
+  --rp-paper: #ffffff;
+  --rp-line: rgba(0, 0, 0, 0.16);
+  color: #17202b;
+}
+
+.rp-paper.rp-theme-cream {
+  --rp-paper: #fbf3e2;
+  --rp-line: rgba(90, 70, 30, 0.25);
+  color: #3a2f1c;
+}
+
+.rp-paper.rp-theme-dark {
+  --rp-paper: #16181d;
+  --rp-line: rgba(255, 255, 255, 0.22);
+  color: #e7ebf0;
+}
+
+.rp-paper-merchant {
+  text-align: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--rp-line);
+}
+
+.rp-paper-merchant-name {
+  font-weight: 700;
+  font-size: 1.02rem;
+}
+
+.rp-paper-merchant-sub {
+  font-size: 0.78rem;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.rp-paper-logo {
+  display: block;
+  max-height: 40px;
+  margin: 0 auto 6px;
+}
+
+.rp-paper-logo-text {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  margin-bottom: 4px;
+}
+
+.rp-paper-meta {
+  margin-bottom: 8px;
+}
+
+.rp-paper-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin: 2px 0;
+}
+
+.rp-paper-label {
+  opacity: 0.72;
+  font-size: 0.82rem;
+}
+
+.rp-paper-customer {
+  margin: 8px 0;
+  padding: 8px 0;
+  border-top: 1px dashed var(--rp-line);
+  border-bottom: 1px dashed var(--rp-line);
+}
+
+.rp-paper-section-title {
+  font-weight: 700;
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+
+.rp-paper-items {
+  margin: 10px 0;
+  padding: 8px 0;
+  border-top: 1px dashed var(--rp-line);
+  border-bottom: 1px dashed var(--rp-line);
+}
+
+.rp-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 6px 0;
+}
+
+.rp-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.rp-item-name {
+  font-weight: 600;
+}
+
+.rp-item-desc {
+  font-size: 0.74rem;
+  opacity: 0.7;
+  margin-top: 1px;
+}
+
+.rp-item-right {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.rp-item-qty {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.rp-item-line {
+  font-weight: 600;
+}
+
+.rp-paper-totals {
+  margin: 10px 0 4px;
+}
+
+.rp-paper-row-total {
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-top: 1px solid var(--rp-line);
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+.rp-barcode {
+  text-align: center;
+  margin: 12px 0 6px;
+}
+
+.rp-barcode-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.rp-barcode-bars span {
+  background: currentColor;
+}
+
+.rp-barcode-text {
+  font-family: "Courier New", monospace;
+  letter-spacing: 2px;
+  font-size: 0.78rem;
+  margin-top: 4px;
+}
+
+.rp-paper-footer {
+  text-align: center;
+  font-size: 0.78rem;
+  opacity: 0.85;
+  margin: 8px 0 0;
+  white-space: pre-line;
+}
+
+/* Serrated / jagged cut edge */
+.rp-cut {
+  height: 10px;
+  margin: 10px -14px 0;
+  background-image:
+    linear-gradient(135deg, var(--rp-paper) 5px, transparent 0),
+    linear-gradient(225deg, var(--rp-paper) 5px, transparent 0);
+  background-position: top left, top left;
+  background-size: 10px 10px;
+  background-repeat: repeat-x;
+}
+
+/* ---- Actions ---- */
+.rp-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 262px;
+  max-width: 88%;
+  margin: 0 auto;
+}
+
+.rp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 44px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  font-family: "Arkan Favorit", "Segoe UI", Tahoma, sans-serif;
+  font-weight: 700;
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.rp-btn i {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.rp-btn:hover {
+  transform: translateY(-1px);
+}
+
+.rp-btn:active {
+  transform: translateY(0);
+}
+
+.rp-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+.rp-btn-primary {
+  background: #0e2c4d;
+  border-color: #0e2c4d;
+  color: #f4f9ff;
+}
+
+.rp-btn-primary:hover:not(:disabled) {
+  background: #163a63;
+  border-color: #163a63;
+}
+
+.rp-btn-secondary {
+  background: #ffffff;
+  border-color: #0e2c4d;
+  color: #0e2c4d;
+}
+
+.rp-btn-secondary:hover:not(:disabled) {
+  background: #eaf1f8;
+}
+
+/* ---- Chassis micro-vibration while printing ---- */
+@keyframes rp-shake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(0.5px, -0.5px); }
+  50% { transform: translate(-0.5px, 0.5px); }
+  75% { transform: translate(0.5px, 0.5px); }
+  100% { transform: translate(0, 0); }
+}
+
+.rp-root.rp-printing .rp-printer {
+  animation: rp-shake 0.18s linear infinite;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 480px) {
+  .rp-paper-holder {
+    width: 230px;
+  }
+  .rp-actions {
+    width: 230px;
+  }
+}
+
+/* ---- Print: only the receipt paper ---- */
+@media print {
+  .rp-overlay {
+    position: static;
+    background: none;
+    backdrop-filter: none;
+    padding: 0;
+    overflow: visible;
+  }
+  .rp-dialog {
+    max-width: none;
+  }
+  .rp-status-card,
+  .rp-printer-wrap,
+  .rp-actions {
+    display: none !important;
+  }
+  .rp-paper-holder {
+    width: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+  .rp-paper {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .rp-paper {
+    transition: transform 0.6s ease !important;
+  }
+  .rp-root.rp-printing .rp-printer {
+    animation: none !important;
+  }
+  .rp-overlay {
+    backdrop-filter: none;
+  }
+  .rp-btn:hover {
+    transform: none;
+  }
+}

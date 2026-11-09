@@ -24,21 +24,20 @@
     error_map_load: "نەخشەکە بار نەبوو. تکایە دووبارە هەوڵبدە یان ناونیشانەکە بنووسە.",
     warning_in_app_browser: "هەندێک وێبگەڕی ناوەخۆیی شوێنکەوتن دەگرن. تکایە وێبگەڕەکە بەکاربێنە.",
     warning_outside_bounds: "شوێنەکە دەرەوەی هەرێمی کوردستانە. دڵنیایت؟",
+    warning_gps_approximate: "شوێنەکە نزیکەییە و وردییەکەی کەمە. دەتوانیت مارکەرەکە ڕابکێشیت بۆ ڕاستکردنەوەی شوێنەکە.",
     saved: "شوێن دیاری کرا.",
     addrAutofilled: "ناونیشان لە نەخشەکەوە وەرگیرا، ئەتوانیت بیگۆڕیت.",
     useSuggested: "بەکاربهێنانی ناونیشانی پێشنیارکراو",
     dismiss: "نەخێر"
   };
 
-  // Default coordinate center (Sulaymaniyah / Erbil region)
-  const DEFAULT_LAT = 35.9;
-  const DEFAULT_LNG = 44.4;
-  const DEFAULT_ZOOM = 8;
+  // Default map center (Sulaymaniyah city center) — single configurable constant
+  const DEFAULT_CENTER = { lat: 35.56, lng: 45.43, zoom: 12 };
   const GPS_ZOOM = 17;
 
-  // Soft Kurdistan bounds (lat 34.0-37.7, lng 42.3-46.8)
+  // Kurdistan Region bounds (approx lat 34.5-37.4, lng 42.3-46.3)
   function isWithinKurdistan(lat, lng) {
-    return lat >= 34.0 && lat <= 37.7 && lng >= 42.3 && lng <= 46.8;
+    return lat >= 34.5 && lat <= 37.4 && lng >= 42.3 && lng <= 46.3;
   }
 
   // In-memory state only (no localStorage / sessionStorage)
@@ -185,9 +184,9 @@
     return loadLeaflet().then(function (L) {
       if (!mapEl) return;
 
-      const lat = targetLat != null ? targetLat : DEFAULT_LAT;
-      const lng = targetLng != null ? targetLng : DEFAULT_LNG;
-      const zoom = zoomLevel != null ? zoomLevel : DEFAULT_ZOOM;
+      const lat = targetLat != null ? targetLat : DEFAULT_CENTER.lat;
+      const lng = targetLng != null ? targetLng : DEFAULT_CENTER.lng;
+      const zoom = zoomLevel != null ? zoomLevel : DEFAULT_CENTER.zoom;
 
       if (!mapInstance) {
         mapInstance = L.map(mapEl, {
@@ -292,34 +291,90 @@
    * Handle user location selection (either GPS fix or manual marker placement/drag)
    */
   function onUserSelectedLocation(lat, lng, source, accuracy) {
-    state.latitude = Number(lat.toFixed(6));
-    state.longitude = Number(lng.toFixed(6));
-    state.locationSource = source; // "gps" | "manual"
-    state.locationCapturedAt = new Date().toISOString();
+    const newLat = Number(lat.toFixed(6));
+    const newLng = Number(lng.toFixed(6));
 
-    if (source === "gps" && accuracy != null && isFinite(accuracy)) {
-      state.accuracyMeters = Number(accuracy);
-    } else {
-      state.accuracyMeters = null;
+    // Snapshot previous selection so an outside-bounds choice can be undone
+    const prev = {
+      latitude: state.latitude,
+      longitude: state.longitude,
+      accuracyMeters: state.accuracyMeters,
+      locationSource: state.locationSource,
+      locationCapturedAt: state.locationCapturedAt
+    };
+
+    function apply() {
+      state.latitude = newLat;
+      state.longitude = newLng;
+      state.locationSource = source; // "gps" | "manual"
+      state.locationCapturedAt = new Date().toISOString();
+
+      if (source === "gps" && accuracy != null && isFinite(accuracy)) {
+        state.accuracyMeters = Number(accuracy);
+      } else {
+        state.accuracyMeters = null;
+      }
+
+      updateMarkerAndCircle(state.latitude, state.longitude, state.accuracyMeters);
+      triggerReverseGeocode(state.latitude, state.longitude);
+      updateChooseMapButtonState(true);
     }
 
-    updateMarkerAndCircle(state.latitude, state.longitude, state.accuracyMeters);
+    function revert() {
+      state.latitude = prev.latitude;
+      state.longitude = prev.longitude;
+      state.accuracyMeters = prev.accuracyMeters;
+      state.locationSource = prev.locationSource;
+      state.locationCapturedAt = prev.locationCapturedAt;
 
-    let statusText = STR.saved;
-    let statusType = "success";
+      // Invalidate any in-flight/pending reverse geocode from the rejected point
+      currentRequestId++;
+      if (geocodeDebounceTimer) {
+        clearTimeout(geocodeDebounceTimer);
+        geocodeDebounceTimer = null;
+      }
+      if (geocodeAbortController) {
+        geocodeAbortController.abort();
+        geocodeAbortController = null;
+      }
 
-    if (!isWithinKurdistan(state.latitude, state.longitude)) {
-      statusText = STR.warning_outside_bounds;
-      statusType = "warn";
+      if (prev.latitude != null && prev.longitude != null) {
+        updateMarkerAndCircle(prev.latitude, prev.longitude, prev.accuracyMeters);
+        updateChooseMapButtonState(true);
+      } else {
+        if (markerInstance && mapInstance) {
+          mapInstance.removeLayer(markerInstance);
+          markerInstance = null;
+        }
+        if (accuracyCircleInstance && mapInstance) {
+          mapInstance.removeLayer(accuracyCircleInstance);
+          accuracyCircleInstance = null;
+        }
+        updateChooseMapButtonState(false);
+      }
+      setStatus("", "");
     }
 
-    setStatus(statusText, statusType);
+    apply();
 
-    // Trigger reverse geocoding with debounce and abort handling (Phase B2)
-    triggerReverseGeocode(state.latitude, state.longitude);
+    if (!isWithinKurdistan(newLat, newLng)) {
+      setStatus(STR.warning_outside_bounds, "warn");
+      AppDialog.confirm({
+        title: STR.mapTitle,
+        message: STR.warning_outside_bounds,
+        confirmText: "دڵنیام",
+        cancelText: "پاشگەزبوونەوە"
+      }).then(function (ok) {
+        if (ok) {
+          setStatus(STR.saved, "success");
+        } else {
+          revert();
+        }
+      });
+      return;
+    }
 
-    // Update button to selected state
-    updateChooseMapButtonState(true);
+    setStatus(STR.saved, "success");
   }
 
   /**
@@ -483,16 +538,18 @@
     // Check secure context
     if (window.isSecureContext === false) {
       setStatus(STR.error_insecure, "error");
+      AppDialog.alert({ title: STR.mapTitle, message: STR.error_insecure, type: "error" });
       openMapPanel(triggerBtn);
-      initOrUpdateMap(state.latitude, state.longitude, state.latitude != null ? GPS_ZOOM : DEFAULT_ZOOM, false);
+      initOrUpdateMap(state.latitude, state.longitude, state.latitude != null ? GPS_ZOOM : DEFAULT_CENTER.zoom, false);
       return;
     }
 
     // Check geolocation API support
     if (!("geolocation" in navigator)) {
       setStatus(STR.error_unsupported, "error");
+      AppDialog.alert({ title: STR.mapTitle, message: STR.error_unsupported, type: "error" });
       openMapPanel(triggerBtn);
-      initOrUpdateMap(state.latitude, state.longitude, state.latitude != null ? GPS_ZOOM : DEFAULT_ZOOM, false);
+      initOrUpdateMap(state.latitude, state.longitude, state.latitude != null ? GPS_ZOOM : DEFAULT_CENTER.zoom, false);
       return;
     }
 
@@ -524,6 +581,11 @@
         initOrUpdateMap(coords.latitude, coords.longitude, GPS_ZOOM, true).catch(function () {
           setStatus(STR.error_map_load, "error");
         });
+
+        if (coords.accuracy != null && isFinite(coords.accuracy) && coords.accuracy > 1000) {
+          setStatus(STR.warning_gps_approximate, "warn");
+          AppDialog.alert({ title: STR.mapTitle, message: STR.warning_gps_approximate, type: "warning" });
+        }
       },
       function (err) {
         isGeolocating = false;
@@ -545,12 +607,15 @@
         }
 
         setStatus(errMsg, "error");
+        AppDialog.alert({ title: STR.mapTitle, message: errMsg, type: "error" });
 
-        // Open map centered on existing or default coords so user can pick manually
+        // Open map centered on existing or default coords so user can pick manually.
+        // Pass state coords (possibly null); initOrUpdateMap falls back to DEFAULT_CENTER
+        // for the view but only places a marker when real coords exist.
         initOrUpdateMap(
-          state.latitude != null ? state.latitude : DEFAULT_LAT,
-          state.longitude != null ? state.longitude : DEFAULT_LNG,
-          state.latitude != null ? GPS_ZOOM : DEFAULT_ZOOM,
+          state.latitude,
+          state.longitude,
+          state.latitude != null ? GPS_ZOOM : DEFAULT_CENTER.zoom,
           false
         ).catch(function () {
           setStatus(STR.error_map_load, "error");

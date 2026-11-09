@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="css/glass-tile-grid.css" />
   <link rel="stylesheet" href="/assets/vendor/leaflet-1.9.4/leaflet.css" />
   <link rel="stylesheet" href="css/location-feature.css" />
+  <link rel="stylesheet" href="css/dialog.css" />
   <link rel="icon" href="assets/favicon.png" />
 </head>
 
@@ -53,14 +54,7 @@
             <button id="adminToggle" class="btn btn-secondary admin-toggle" style="color: var(--accent);"><i
                 class="fa-solid fa-bars"></i>
               ئەدمین</button>
-            <div class="admin-dropdown hidden">
-              <a href="/pos.html">خاڵی داواکردن (POS)</a>
-              <a href="/dashboard.html">داشبۆرد</a>
-              <a href="/report.html">ئامار</a>
-              <a href="/settings.html">ڕێکخستنی نرخەکان</a>
-              <button id="logoutBtn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i>
-                چوونەدەرەوە</button>
-            </div>
+            <div class="admin-dropdown hidden"></div>
           </div>
           <a href="#book" class="btn btn-primary">داواکردنی تیمەکانمان</a>
         </div>
@@ -241,7 +235,9 @@
     </div>
   </div>
 
+  <script src="js/menu.js"></script>
   <script src="js/global-utils.js"></script>
+  <script src="js/dialog.js"></script>
   <script src="js/dynamic-services.js"></script>
   <script src="js/script.js?v=2.0"></script>
   <script src="js/location-feature.js" defer></script>

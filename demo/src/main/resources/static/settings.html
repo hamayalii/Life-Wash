@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/dialog.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -465,14 +466,7 @@
         <div id="adminMenu" class="admin-menu hidden">
             <button id="adminToggle" class="btn btn-secondary admin-toggle"><i class="fa-solid fa-bars"></i>
               ئەدمین</button>
-            <div class="admin-dropdown hidden">
-                <a href="/index.html">سەرەکی</a>
-                <a href="/dashboard.html">داشبۆرد</a>
-              <a href="/pos.html">خاڵی داواکردن (POS)</a>
-              <a href="/report.html">ئامار</a>
-              <button id="logoutBtn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i>
-                چوونەدەرەوە</button>
-            </div>
+            <div class="admin-dropdown hidden"></div>
           </div>
         
         <!-- Tab Navigation -->
@@ -533,7 +527,7 @@
                         <div class="price-input-group">
                             <div class="input-wrapper">
                                 <label class="input-label">نرخی شووشتنی خزمەتگوزاری (IQD)</label>
-                                <input type="number" class="price-input" 
+                                <input type="text" inputmode="decimal" class="price-input"
                                        id="basePrice"
                                        placeholder="0.00"
                                        min="0"
@@ -554,7 +548,7 @@
                         <div class="price-input-group" id="sofaSetSizeGroup" style="display: none;">
                             <div class="input-wrapper">
                                 <label class="input-label">قەنەفە - ستاندارد (ژمارەی کەس/نەفەر)</label>
-                                <input type="number" class="price-input" 
+                                <input type="text" inputmode="decimal" class="price-input"
                                        id="sofaStandardSetSize"
                                        placeholder="10"
                                        min="1"
@@ -662,7 +656,9 @@
         </div>
     </div>
     
+    <script src="js/menu.js"></script>
     <script src="js/global-utils.js"></script>
+    <script src="js/dialog.js"></script>
     <script src="js/settings.js"></script>
     
     <!-- Conflict Resolution Modal -->

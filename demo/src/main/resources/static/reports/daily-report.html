@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ڕاپۆرتی ڕۆژانە — کارگەی غەسل</title>
+    <style>
+        @font-face {
+            font-family: 'Arkan';
+            src: url('../assets/fonts/Arkan ABC Favorit Light-s.p.7dfab851.otf') format('opentype');
+            font-weight: 300;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Arkan';
+            src: url('../assets/fonts/Arkan ABC Favorit Book-s.p.85946152.ttf') format('truetype');
+            font-weight: 400;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Arkan';
+            src: url('../assets/fonts/Arkan ABC Favorit Regular-s.p.13709ce1.ttf') format('truetype');
+            font-weight: 500;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Arkan';
+            src: url('../assets/fonts/Arkan ABC Favorit Medium-s.p.8ec3f1e7.otf') format('opentype');
+            font-weight: 600;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Arkan';
+            src: url('../assets/fonts/Arkan ABC Favorit Bold-s.p.62621432.ttf') format('truetype');
+            font-weight: 700;
+            font-display: swap;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+
+        body {
+            font-family: 'Arkan', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #1f2937;
+            background: #374151;
+            min-height: 100vh;
+            padding: 2rem 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .page {
+            max-width: 350px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        /* Header Section - Screen Mode */
+        .header {
+            border-bottom: 1px dashed #9ca3af;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .header-title {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-size: 9pt;
+            color: #6b7280;
+        }
+
+        .header-meta-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .header-meta-label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        /* KPIs Section - Screen Mode */
+        .kpi-section {
+            margin-bottom: 1rem;
+            border-bottom: 1px dashed #9ca3af;
+            padding-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+
+        .kpi-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .kpi-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 0.75rem;
+        }
+
+        .kpi-label {
+            font-size: 8pt;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+
+        .kpi-value {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .kpi-change {
+            font-size: 8pt;
+            font-weight: 600;
+        }
+
+        .kpi-change.negative {
+            color: #ef4444;
+        }
+
+        .kpi-change.positive {
+            color: #10b981;
+        }
+
+        .kpi-change.neutral {
+            color: #6b7280;
+        }
+
+        /* Tables Section - Screen Mode */
+        .tables-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .table-container {
+            border-bottom: 1px dashed #9ca3af;
+            padding-bottom: 1rem;
+        }
+
+        .table-container:last-child {
+            border-bottom: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+        }
+
+        thead {
+            background: #f3f4f6;
+            border-bottom: 1px dashed #9ca3af;
+        }
+
+        th {
+            padding: 0.5rem;
+            text-align: right;
+            font-weight: 700;
+            color: #1f2937;
+            border-bottom: 1px dashed #9ca3af;
+        }
+
+        td {
+            padding: 0.4rem 0.5rem;
+            border-bottom: 1px dashed #e5e7eb;
+            color: #374151;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .percentage {
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        /* Footer - Screen Mode */
+        .footer {
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed #9ca3af;
+            font-size: 8pt;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        /* Action Buttons - Screen Only */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 10pt;
+            font-weight: 600;
+            font-family: 'Arkan', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .action-buttons button:nth-child(1) {
+            background: #2563eb;
+            color: white;
+        }
+
+        .action-buttons button:nth-child(1):hover {
+            background: #1d4ed8;
+        }
+
+        .action-buttons button:nth-child(2) {
+            background: #10b981;
+            color: white;
+        }
+
+        .action-buttons button:nth-child(2):hover {
+            background: #059669;
+        }
+
+        .action-buttons button:nth-child(3) {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .action-buttons button:nth-child(3):hover {
+            background: #d1d5db;
+        }
+
+        /* Print-specific styles - A4 Corporate Morphing */
+        @media print {
+            body {
+                background: #ffffff;
+                width: 210mm;
+                margin: 0;
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .page {
+                max-width: 210mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                background: #ffffff;
+            }
+
+            /* Ensure hidden pages are not printed */
+            .page[style*="display: none"] {
+                display: none !important;
+            }
+
+            /* Header - Print Mode */
+            .header {
+                border-bottom: 2px solid #1f2937;
+                padding-bottom: 8mm;
+                margin-bottom: 10mm;
+                text-align: right;
+            }
+
+            .header-title {
+                font-size: 20pt;
+                margin-bottom: 4mm;
+            }
+
+            .header-meta {
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 15mm;
+                font-size: 10pt;
+            }
+
+            .header-meta-item {
+                flex-direction: column;
+            }
+
+            .header-meta-label {
+                margin-bottom: 1mm;
+            }
+
+            /* KPIs - Print Mode */
+            .kpi-section {
+                margin-bottom: 10mm;
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+            .section-title {
+                font-size: 13pt;
+                margin-bottom: 4mm;
+                padding-bottom: 2mm;
+                border-bottom: 1px solid #e5e7eb;
+                text-align: right;
+            }
+
+            .kpi-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4mm;
+            }
+
+            .kpi-card {
+                flex: 1 1 calc(33.333% - 4mm);
+                min-width: 50mm;
+                padding: 5mm;
+                page-break-inside: avoid;
+            }
+
+            .kpi-label {
+                font-size: 9pt;
+                margin-bottom: 2mm;
+            }
+
+            .kpi-value {
+                font-size: 18pt;
+                margin-bottom: 1mm;
+            }
+
+            .kpi-change {
+                font-size: 9pt;
+            }
+
+            /* Tables - Print Mode */
+            .tables-section {
+                margin-bottom: 10mm;
+            }
+
+            .table-container {
+                border-bottom: none;
+                padding-bottom: 0;
+                margin-bottom: 8mm;
+            }
+
+            table {
+                font-size: 10pt;
+            }
+
+            thead {
+                background: #f3f4f6;
+                border-bottom: 2px solid #1f2937;
+            }
+
+            th {
+                padding: 3mm;
+                font-size: 11pt;
+                border-bottom: 1px solid #1f2937;
+            }
+
+            td {
+                padding: 2mm 3mm;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            /* Footer - Print Mode */
+            .footer {
+                margin-top: 15mm;
+                padding-top: 5mm;
+                border-top: 1px solid #1f2937;
+                font-size: 9pt;
+                color: #6b7280;
+            }
+
+            /* Hide action buttons in print */
+            .action-buttons {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header-title">ڕاپۆرتی ڕۆژانە</h1>
+            <div class="header-meta">
+                <div class="header-meta-item">
+                    <span class="header-meta-label">بەروار:</span>
+                    <span id="report-date">2025-01-15</span>
+                </div>
+                <div class="header-meta-item">
+                    <span class="header-meta-label">کات:</span>
+                    <span id="report-time">14:30</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- KPIs Section -->
+        <section class="kpi-section">
+            <h2 class="section-title">نیشانەرە سەرەکییەکان (KPIs)</h2>
+            <div class="kpi-grid hidden" id="kpi-content">
+                <div class="kpi-card">
+                    <div class="kpi-label">کۆی داواکارییەکانی وێبسایت</div>
+                    <div class="kpi-value" id="website-orders">-</div>
+                    <div class="kpi-change neutral">بە ڕۆژ</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">کۆی مامەڵەکان</div>
+                    <div class="kpi-value" id="total-transactions">-</div>
+                    <div class="kpi-change" id="total-transactions-change">-</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">قازانجی ڕۆژانە</div>
+                    <div class="kpi-value" id="daily-revenue">-</div>
+                    <div class="kpi-change" id="daily-revenue-change">-</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">قازانجی خاوێن</div>
+                    <div class="kpi-value" id="net-profit">-</div>
+                    <div class="kpi-change" id="net-profit-change">-</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">تێکڕای بەهای هەر داواکارییەک</div>
+                    <div class="kpi-value" id="avg-order-value">-</div>
+                    <div class="kpi-change" id="avg-order-value-change">-</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">ڕێژەی تەواوبوون</div>
+                    <div class="kpi-value" id="completion-rate">-</div>
+                    <div class="kpi-change" id="completion-rate-change">-</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tables Section -->
+        <section class="tables-section">
+            <!-- Order Status Distribution Table -->
+            <div class="table-container">
+                <h2 class="section-title">دابەشکردنی دۆخی داواکارییەکان</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>دۆخ</th>
+                            <th>ژمارە</th>
+                            <th>ڕێژە</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>تەواو (Completed)</td>
+                            <td id="completed-count">-</td>
+                            <td class="percentage" id="completed-percent">-</td>
+                        </tr>
+                        <tr>
+                            <td>لە چاوەڕوانیدا (Pending)</td>
+                            <td id="pending-count">-</td>
+                            <td class="percentage" id="pending-percent">-</td>
+                        </tr>
+                        <tr>
+                            <td>نرخەکەی لە چاوەڕوانیدایە (Pending Price)</td>
+                            <td id="pending-price-count">-</td>
+                            <td class="percentage" id="pending-price-percent">-</td>
+                        </tr>
+                        <tr>
+                            <td>ڕەتکراوە (Rejected)</td>
+                            <td id="rejected-count">-</td>
+                            <td class="percentage" id="rejected-percent">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Services Distribution Table -->
+            <div class="table-container">
+                <h2 class="section-title">دابەشکردنی خزمەتگوزارییەکان</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>خزمەتگوزاری</th>
+                            <th>ژمارە</th>
+                        </tr>
+                    </thead>
+                    <tbody id="services-table-body">
+                        <tr>
+                            <td colspan="2" style="text-align: center; color: #6b7280;">داتا بار دەکرێت...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            کارگەی غەسل - سیستەمی بەڕێوەبردن - ڕاپۆرتی ڕۆژانە
+        </footer>
+
+        <!-- Action Buttons (Screen Only) -->
+        <div class="action-buttons">
+            <button onclick="window.print()">داگرتن بە PDF</button>
+            <button onclick="exportToCSV()">داگرتن بە Excel (CSV)</button>
+            <button onclick="window.parent.closeReportModal()">داخستن</button>
+        </div>
+    </div>
+
+    <script>
+        // Set current date and time
+        const now = new Date();
+        document.getElementById('report-date').textContent = now.toLocaleDateString('ckb-IQ');
+        document.getElementById('report-time').textContent = now.toLocaleTimeString('ckb-IQ', { hour: '2-digit', minute: '2-digit' });
+
+        // Add loading spinner animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Fetch real data from backend API
+        async function fetchDailyReportData() {
+            try {
+                const response = await fetch('/api/v1/admin/reports/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reportType: 'DAILY' })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                updateReportWithRealData(data);
+            } catch (error) {
+                console.error('Error fetching report data:', error);
+            }
+        }
+
+        function updateReportWithRealData(data) {
+            // Show KPI content
+            document.getElementById('kpi-content').classList.remove('hidden');
+
+            // Update KPIs with real data
+            document.getElementById('website-orders').textContent = data.totalOrders || 0;
+            document.getElementById('total-transactions').textContent = data.totalOrders || 0;
+            document.getElementById('daily-revenue').textContent = formatCurrency(data.totalRevenue || 0);
+            document.getElementById('net-profit').textContent = formatCurrency(data.totalRevenue || 0); // Simplified - backend should provide net profit
+
+            // Calculate averages
+            const avgOrderValue = data.totalOrders > 0 ? (data.totalRevenue / data.totalOrders) : 0;
+            document.getElementById('avg-order-value').textContent = formatCurrency(avgOrderValue);
+
+            // Calculate completion rate
+            const completionRate = data.totalOrders > 0
+                ? ((data.acceptedOrders / data.totalOrders) * 100).toFixed(1) + '%'
+                : '0%';
+            document.getElementById('completion-rate').textContent = completionRate;
+
+            // Update order status distribution
+            const total = data.totalOrders || 1;
+            document.getElementById('completed-count').textContent = data.acceptedOrders || 0;
+            document.getElementById('completed-percent').textContent = total > 0
+                ? ((data.acceptedOrders / total) * 100).toFixed(1) + '%'
+                : '0%';
+            document.getElementById('pending-count').textContent = data.pendingOrders || 0;
+            document.getElementById('pending-percent').textContent = total > 0
+                ? ((data.pendingOrders / total) * 100).toFixed(1) + '%'
+                : '0%';
+            document.getElementById('rejected-count').textContent = data.rejectedOrders || 0;
+            document.getElementById('rejected-percent').textContent = total > 0
+                ? ((data.rejectedOrders / total) * 100).toFixed(1) + '%'
+                : '0%';
+
+            // Note: Unpriced pending is not in current response, setting to 0
+            document.getElementById('pending-price-count').textContent = '0';
+            document.getElementById('pending-price-percent').textContent = '0%';
+
+            // Fetch service breakdown
+            fetchServiceBreakdown();
+        }
+
+        async function fetchServiceBreakdown() {
+            try {
+                const response = await fetch('/api/v1/admin/dashboard/top-services?period=today');
+                if (!response.ok) return;
+
+                const services = await response.json();
+                const tbody = document.getElementById('services-table-body');
+                tbody.innerHTML = '';
+
+                if (services.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #6b7280;">هیچ خزمەتگوزارییەک نییە</td></tr>';
+                    return;
+                }
+
+                services.forEach(service => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${service.name || 'نازانراو'}</td>
+                        <td>${service.count || 0}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error fetching service breakdown:', error);
+            }
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ku-IQ', {
+                style: 'currency',
+                currency: 'IQD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // CSV Export Function with UTF-8 BOM
+        function exportToCSV() {
+            let csvContent = "\uFEFF"; // UTF-8 BOM for Excel
+
+            // Add report metadata
+            csvContent += "ڕاپۆرتی ڕۆژانە\n";
+            csvContent += "بەروار," + document.getElementById('report-date').textContent + "\n";
+            csvContent += "کات," + document.getElementById('report-time').textContent + "\n\n";
+
+            // Add KPIs
+            csvContent += "نیشانەرە سەرەکییەکان (KPIs)\n";
+            csvContent += "پێوانە,بەها\n";
+            csvContent += "کۆی داواکارییەکانی وێبسایت," + document.getElementById('website-orders').textContent + "\n";
+            csvContent += "کۆی مامەڵەکان," + document.getElementById('total-transactions').textContent + "\n";
+            csvContent += "قازانجی ڕۆژانە," + document.getElementById('daily-revenue').textContent + "\n";
+            csvContent += "قازانجی خاوێن," + document.getElementById('net-profit').textContent + "\n";
+            csvContent += "تێکڕای بەهای هەر داواکارییەک," + document.getElementById('avg-order-value').textContent + "\n";
+            csvContent += "ڕێژەی تەواوبوون," + document.getElementById('completion-rate').textContent + "\n\n";
+
+            // Add Order Status Distribution
+            csvContent += "دابەشکردنی دۆخی داواکارییەکان\n";
+            csvContent += "دۆخ,ژمارە,ڕێژە\ntەواو (Completed)," + document.getElementById('completed-count').textContent + "," + document.getElementById('completed-percent').textContent + "\n";
+            csvContent += "لە چاوەڕوانیدا (Pending)," + document.getElementById('pending-count').textContent + "," + document.getElementById('pending-percent').textContent + "\n";
+            csvContent += "نرخەکەی لە چاوەڕوانیدایە (Pending Price)," + document.getElementById('pending-price-count').textContent + "," + document.getElementById('pending-price-percent').textContent + "\n";
+            csvContent += "ڕەتکراوە (Rejected)," + document.getElementById('rejected-count').textContent + "," + document.getElementById('rejected-percent').textContent + "\n\n";
+
+            // Add Services Distribution from table
+            csvContent += "دابەشکردنی خزمەتگوزارییەکان\n";
+            csvContent += "خزمەتگوزاری,ژمارە\n";
+            const serviceRows = document.querySelectorAll('#services-table-body tr');
+            serviceRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 2) {
+                    csvContent += cells[0].textContent + "," + cells[1].textContent + "\n";
+                }
+            });
+
+            // Create and trigger download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'daily-report-' + now.toISOString().split('T')[0] + '.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Fetch data on page load
+        fetchDailyReportData();
+    </script>
+</body>
+</html>
