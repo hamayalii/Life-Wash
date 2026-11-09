@@ -18,6 +18,9 @@ public class AdminSeeder {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.admin.default-username}")
+    private String defaultAdminUsername;
+
     @Value("${app.admin.default-password}")
     private String defaultAdminPassword;
 
@@ -31,11 +34,11 @@ public class AdminSeeder {
         if (userRepository.count() == 0) {
             log.info("No users found. Seeding default admin user.");
             User admin = new User();
-            admin.setUsername("admin");
+            admin.setUsername(defaultAdminUsername);
             admin.setPassword(passwordEncoder.encode(defaultAdminPassword));
             admin.setRole("ROLE_ADMIN");
             userRepository.save(admin);
-            log.info("Default admin user 'admin' created successfully.");
+            log.info("Default admin user '{}' created successfully.", defaultAdminUsername);
         }
     }
 }
