@@ -1,0 +1,40 @@
+# flyctl launch added from .idea/.gitignore
+# Default ignored files
+.idea/shelf
+.idea/workspace.xml
+
+# flyctl launch added from demo/.gitignore
+demo/**/HELP.md
+demo/**/target
+demo/**/.mvn/wrapper/maven-wrapper.jar
+!demo/**/**/src/main/**/target
+!demo/**/**/src/test/**/target
+
+### STS ###
+demo/**/.apt_generated
+demo/**/.classpath
+demo/**/.factorypath
+demo/**/.project
+demo/**/.settings
+demo/**/.springBeans
+demo/**/.sts4-cache
+
+### IntelliJ IDEA ###
+demo/**/.idea
+demo/**/*.iws
+demo/**/*.iml
+demo/**/*.ipr
+
+### NetBeans ###
+demo/nbproject/private
+demo/nbbuild
+demo/dist
+demo/nbdist
+demo/.nb-gradle
+demo/**/build
+!demo/**/**/src/main/**/build
+!demo/**/**/src/test/**/build
+
+### VS Code ###
+demo/**/.vscode
+fly.toml

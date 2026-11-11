@@ -31,14 +31,24 @@ public class AdminSeeder {
 
     @EventListener(ApplicationReadyEvent.class)
     public void seedAdminUser() {
-        if (userRepository.count() == 0) {
-            log.info("No users found. Seeding default admin user.");
-            User admin = new User();
-            admin.setUsername(defaultAdminUsername);
-            admin.setPassword(passwordEncoder.encode(defaultAdminPassword));
-            admin.setRole("ROLE_ADMIN");
-            userRepository.save(admin);
-            log.info("Default admin user '{}' created successfully.", defaultAdminUsername);
-        }
+        userRepository.findByUsername(defaultAdminUsername).ifPresentOrElse(
+            admin -> {
+                // Keep the stored password in sync with the ADMIN_PASSWORD secret
+                if (!passwordEncoder.matches(defaultAdminPassword, admin.getPassword())) {
+                    admin.setPassword(passwordEncoder.encode(defaultAdminPassword));
+                    userRepository.save(admin);
+                    log.info("Updated password for admin user '{}'.", defaultAdminUsername);
+                }
+            },
+            () -> {
+                log.info("No admin user found. Seeding default admin user.");
+                User admin = new User();
+                admin.setUsername(defaultAdminUsername);
+                admin.setPassword(passwordEncoder.encode(defaultAdminPassword));
+                admin.setRole("ROLE_ADMIN");
+                userRepository.save(admin);
+                log.info("Default admin user '{}' created successfully.", defaultAdminUsername);
+            }
+        );
     }
 }
